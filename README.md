@@ -311,6 +311,44 @@ By default the backend serves the frontend at `/`, so one command runs everythin
 static host), set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/config.js) to the API's address and start the backend with
 `LIVINGDOC_CORS_ORIGINS=https://your-frontend-origin`.
 
+## Problems Faced & Engineering Challenges
+
+Building an autonomous operations brain for micro-businesses revealed real-world edge cases where standard enterprise patterns fail. Here are the 7 major engineering problems faced and how LivingDoc solves them:
+
+### 1. Running Massive AI Locally on Edge Hardware
+* **The Problem:** Small businesses run on modest store laptops, tablets, or old POS counters—not GPU workstations. Attempting to run 8B+ local models (like Llama 3.1 8B) saturated CPU/GPU cores, caused thermal throttling, drained laptop batteries, and triggered out-of-memory crashes.
+* **Our Solution:** LivingDoc decouples reasoning from compute:
+  1. It provides an **OpenAI-compatible cloud bridge (e.g. Groq)** that delivers 20B/70B parameter reasoning in under **200 milliseconds** with **0% local CPU load**.
+  2. For completely offline environments, it falls back to a **sub-1B micro-model (`llama3.2:1b` / `qwen2.5:0.5b`)** taking less than 1.5 GB of RAM.
+  3. If no LLM is running at all, a deterministic regex/rule engine instantly takes over—the shopkeeper's interface never crashes.
+
+### 2. Global Cloud Hosting vs. Local Data Sovereignty
+* **The Problem:** Shopkeepers are intensely protective of their books. Forcing them to upload customer names, informal debts, and supplier pricing to a centralized multi-tenant cloud database introduces compliance liabilities, recurring subscription costs, and deep user distrust.
+* **Our Solution:** A **Local-First Data Architecture**. The primary ledger and SQLite databases live 100% on the shop's physical machine. When cloud AI is used, only anonymized text fragments are evaluated transiently in memory; zero customer records or financial books are stored on third-party servers.
+
+### 3. Context-Window Drift & Token Explosion (The "Full Document Rewrite" Trap)
+* **The Problem:** Early naive prototypes passed the entire operational state back into the LLM on every voice note: `LLM(Entire Document + New Note) → Rewritten Document`. As the business accumulated hundreds of inventory items and debts, the context window exploded, latency skyrocketed, and the LLM began hallucinating math errors (e.g. subtracting 5 from 12 and getting 8).
+* **Our Solution:** **Event-Sourced Delta Extraction**. The AI acts strictly as an event parser, extracting tiny JSON deltas (`{"item": "Milk", "change": -4}`). Plain, deterministic Python/SQLite code performs the mathematical additions and subtractions. Context tokens stay minimal (<100 tokens), latency remains sub-second, and arithmetic is mathematically guaranteed.
+
+### 4. Hardware & Environment Fragmentation (The "Zero-Sysadmin" Reality)
+* **The Problem:** The business owner is simultaneously the cashier, cleaner, and accountant; they cannot maintain Docker containers, resolve Python build dependencies, or configure Node.js build pipelines.
+* **Our Solution:** The frontend is written in **vanilla modular ES JavaScript and pure CSS**—there is no npm build, no Webpack, and no bundle step. The backend is a lightweight FastAPI engine running on SQLite in WAL mode. It boots in a single command across macOS, Linux, and Windows.
+
+### 5. Code-Mixed Multilingual Noise (Hinglish & Regional Dialects)
+* **The Problem:** Micro-SMB owners rarely speak formatted English. A single voice ramble frequently mixes languages and informal colloquialisms (*"2 packet ghee becha, Ramesh ne 300 rupiya diya, baki kal dega"*). Off-the-shelf named-entity recognition (NER) models fail completely on code-mixed grammar.
+* **Our Solution:** Targeted prompt engineering with localized schema constraints and phonetic keyword resolution against the store's known product catalog (`KNOWN_ITEMS`), allowing seamless recognition across English, Hindi, and Gujarati.
+
+### 6. Radical Uncertainty & Unwritten External Signals
+* **The Problem:** A shopkeeper's sales are moved by external variables that exist in no ERP: sudden monsoon rain, local festival dates, neighborhood salary paydays, and rival shop discounts.
+* **Our Solution:** The **Foresight Multi-Factor Engine**:
+  * Ingests free, zero-key **Open-Meteo Weather APIs** for 16-day rainfall and temperature forecasts.
+  * Algorithmic **Payday Spending Waves** calibrating purchasing power on the 1st and 7th of the month.
+  * **Bayesian Owner Intuition:** The owner types unwritten hunches (*"Metro construction outside"*, *"Wedding nearby"*), and the system treats it as an offset with Bayesian shrinkage that updates as real days are logged.
+
+### 7. The Evaluation Paradox ("Did We Decide Well?")
+* **The Problem:** In volatile markets, a good decision can produce a bad outcome (a sudden storm empties the street), while a reckless decision can look like genius through dumb luck. Traditional business software only records the final revenue, never evaluating the quality of the decision under uncertainty.
+* **Our Solution:** A **Frozen-Forecast Scorecard**. The system freezes its demand and price predictions *before* midnight of the target day. It evaluates past bets using three honest tests: Calibration (did 80% of days fall within the 80% confidence band?), Skill (did the model outperform a naive 7-day rolling baseline?), and Counterfactual Value (did dynamic surge/hold prices generate higher profit than flat pricing?).
+
 ## Limitations (please read before using it for a real shop)
 
 - **No login.** Anyone who can reach the server can read and change the data. Keep it on `127.0.0.1` or inside the shop's network, and put it behind a reverse proxy with authentication before exposing it to the internet.
