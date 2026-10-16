@@ -1,0 +1,37 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 var(--font-body);
+  background-image: radial-gradient(circle at 12% -10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 40%);
+  min-height: 100vh;
+}
+h1, h2, h3 { font-family: var(--font-head); line-height: 1.2; margin: 0; letter-spacing: -.01em; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--accent); color: var(--accent-ink); padding: .5rem 1rem; z-index: 99; }
+.skip:focus { left: 8px; top: 8px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- layout ---------- */
+.shell { overflow-x: clip; max-width: 1320px; margin: 0 auto; padding: 0 16px 48px; }
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px;
+  padding: 16px 0; position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line); margin-bottom: 20px;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { width: 34px; height: 34px; flex: none; }
+.brand h1 { font-size: 1.15rem; }
+.brand small { display: block; color: var(--ink-2); font-size: .8rem; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
+.controls select.input { width: auto; max-width: 100%; }
+.grid { display: grid; grid-template-columns: minmax(300px, 2fr) minmax(0, 3fr); gap: 24px; align-items: start; }
+.grid > *, .col-left > * { min-width: 0; }
+.col-left { display: grid; gap: 20px; position: sticky; top: 92px; }
+@media (max-width: 960px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .col-left { position: static; }
+  .topbar { position: static; }
+}
