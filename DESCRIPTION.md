@@ -28,10 +28,11 @@ coffees, used 2 milks, Dave paid 500 cash, remind me to order beans") and the pa
 - **Forecast & pricing.** A Bayesian demand model (weather, paydays, festivals, rival promotions, owner-added factors) starts from labelled assumptions and is pulled toward reality as real days are logged. It recommends raise / sale / hold prices and prep quantities capped by real stock, and a scorecard grades only forecasts made before the day.
 - **Trust ledger and promise cash flow.** Money owed, money we owe, favours and someone's word are kept as promises with *both* sides' figures. The other person gets a private link to see, dispute and veto what is recorded about them. Open promises feed a seeded cash-flow forecast with a 10/50/90% range.
 - **Proof without exposure.** The shop can sign band-level claims ("owed at least ₹5,000 by at least 2 people, nothing over 7 days late") built only from entries both sides allowed, with no names or amounts, plus a verifier challenge that picks the entries to open. Honestly labelled selective disclosure, not zero-knowledge.
+- **Be found, stay in control.** An owner-built public shop page (private until ticked, schema.org-ready, with a checkable trust badge) and an AI helper that only drafts: it shows where every word came from, cannot publish or spend, is capped by a budget the owner sets, and is fully logged.
 - **Multiple branches** sync their stock movements hourly through a shared hub.
 
 **Tech.** FastAPI, pydantic, SQLite (WAL), pandas/numpy (forecasting), a dependency-free modular JavaScript frontend with an OpenAPI-documented REST
-API between them. 104 backend tests plus a real-browser smoke test.
+API between them. 118 backend tests plus a real-browser smoke test.
 
 **What is real and what is assumed.** The scanner hardware is assumed. The LLM is optional: without it, an English-only
 rule-based reader keeps the app working. There is no login yet, so it is meant for a trusted shop network.

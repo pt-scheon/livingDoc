@@ -45,6 +45,7 @@ deterministic English rule parser takes over, so the app keeps working.
 | **Quiet breakage warnings** | Automatic detection: out of stock, will run out before the supplier can deliver, overdue debts, one customer holding most of the unpaid money, stale promises, silent scanner, lagging branch sync, sales drop, placeholder items awaiting review. Warnings noted from your notes can be marked done. |
 | **Festive predictions** | Surge multiplier, supplier blackout buffer, reorder deadline so stock arrives 48 h before the surge, perishable overstock guard. Editable festival calendar and lead time. |
 | **Trust ledger, proof without exposure, promise → cash flow** | Every promise (money owed, money we owe, favours, someone's word) keeps *both* sides' figures. Each person gets a private link to see, dispute and veto what is recorded about them. Open money promises are turned into a seeded cash-flow forecast, and the shop can sign a proof of a few band-level facts without showing names or amounts. See [Trust ledger](#trust-ledger-proof-without-exposure-promise--cash-flow). |
+| **Be found, stay in control** | An owner-built public shop page (`shop.html?s=<slug>`) where every field is hidden until ticked, plus an AI helper that can only write drafts. It shows why each draft says what it says, cannot publish, edit or spend, and everything it and you do is logged. The page can carry a signed, checkable trust badge. See [Be found, stay in control](#be-found-stay-in-control). |
 | **Forecast & Pricing** | Daily demand forecast with 50/80% ranges (weather, paydays, festivals, rival promotions, your own factors), a per-product raise / sale / hold plan with prep quantities capped by real stock, a scorecard that grades only forecasts frozen before the day, and an Owner desk where you add things the data cannot see and log real days so the AI's belief visibly updates. Integrated from the Foresight module. See [Forecast & Pricing](#forecast--pricing-foresight). |
 | **Scanner** | Accepts files (`.json`, `.jsonl`, `.csv`) dropped in a folder **or** JSON posted to the API. Duplicate-safe, never lets stock go negative, flags problems instead of crashing. |
 | **Multi-branch** | Stock movements upload hourly to a shared hub and are pulled by every other branch. Repeat syncs change nothing. |
@@ -145,6 +146,9 @@ Full, interactive reference at `/docs` (Swagger) and `/redoc`. Summary:
 | `GET /api/cashflow/promises?horizon=&opening_cash=&include_sales=` | Day-by-day cash from open promises (10/50/90%), per-promise odds, warnings, every assumption |
 | `GET /api/proofs/preview`, `GET/POST /api/proofs`, `GET /api/proofs/{id}`, `POST /api/proofs/{id}/revoke` | Preview what a proof reveals, sign it, list, fetch, revoke |
 | `POST /api/proofs/verify`, `POST /api/proofs/{id}/open`, `POST /api/proofs/check-openings` | Verifier tools: check signature/expiry/revocation, spot-check challenge, check the openings |
+| `GET/PUT /api/presence` | Profile of the public page (every field private until ticked), autonomy, budget cap |
+| `POST /api/presence/suggest`, `GET /api/presence/drafts`, `PATCH /api/presence/drafts/{id}`, `POST /api/presence/drafts/{id}/{approve|publish|unpublish|reject}`, `POST /api/presence/drafts/{id}/boost`, `GET /api/presence/log` | Helper drafts (only when asked), owner decisions, planned spend inside the cap, audit log |
+| `GET /api/presence/public/{slug}` | The only unauthenticated view of a shop: published, owner-chosen fields, schema.org JSON-LD |
 | `GET /api/audit` | Check that every stock count equals the sum of its movement log |
 
 ## Forecast & Pricing (Foresight)
@@ -192,6 +196,19 @@ The design answer is **two views, two consents, bands not names**.
 - The open key is a bearer secret: whoever has it (plus a proof id) can run challenges for that proof.
 - The signing key lives in the database next to the data; protect the database file.
 - Forecast odds are a model of past behaviour with a stated prior, not a promise of payment.
+
+## Be found, stay in control
+
+**The riddle, answered.** Good small shops stay unknown, and owners avoid the tools that could help because those tools are opaque: they write, design and spend, and the owner cannot see why or stop them. What is missing is not more power but *legibility and a veto*. So the helper here is built around four rules, each enforced in code and tested:
+
+1. **Private by default.** The public page does not exist until you switch it on, and each field (name, product names, trust badge) is hidden until you tick it. Stock levels, customers, debts, cash and ledger entries are never shown.
+2. **Drafts only.** The helper writes drafts when you press the button (never in the background) from your own data: your tagline, the festival calendar, a signed proof. It cannot publish, change your page or spend. Each draft shows its source, what it used, and what it invented (it states no prices or discounts). Draft in English, Hindi or Gujarati, edit freely, then approve and publish in two separate taps.
+3. **Spending has a cap you set.** Boosts above the remaining cap are refused. No ad account is connected, so a boost is recorded as *planned* spend and the page says nothing was bought.
+4. **A glass activity log.** Every action is recorded with who did it (helper or you). Turn the helper off and suggestions stop. Revoke a proof and its badge disappears from the public page immediately.
+
+**Being found.** The public page carries schema.org `LocalBusiness` JSON-LD so search engines and assistants can read it, and a trust section: the band-level claims of a signed proof that any visitor can check with one tap (no names, no amounts). Trust here means *checkable*, not *audited*.
+
+**Honest limits.** The page is served by this app: to be reachable on the internet it must be hosted behind HTTPS (the owner admin screens still have no login, so host only the public page or add authentication). Drafts are filled-in templates, not a language model, so they are plain on purpose. No ad platform or social network is connected.
 
 ## Connecting the scanner
 
@@ -249,8 +266,8 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 104 tests
-pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 26 checks
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 118 tests
+pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 33 checks
 ```
 
 The backend tests cover the engine, extraction and validation (including a fake LLM and garbage LLM output), stock math,
@@ -273,14 +290,15 @@ backend/
     i18n.py          server-side translations (EN/HI/GU)
     forecast_api.py  Forecast & Pricing routes
     trust_api.py     Trust ledger, promise cash flow and proof routes
+    presence_api.py  Public shop page, drafting helper, audit log
     workers.py       background loop (scanner inbox, hourly sync, daily forecast job)
-    services/        extraction · inventory · ledger · scanner · sync · document · catalog · forecasting · trust · cashflow · proofs · seed
+    services/        extraction · inventory · ledger · scanner · sync · document · catalog · forecasting · trust · cashflow · proofs · presence · seed
   foresight/         vendored demand & pricing engine (model, pricing, owner learning, scorecard, trends, weather)
   tests/             pytest suite
 frontend/
-  index.html  party.html  config.js  css/
+  index.html  party.html  shop.html  config.js  css/
   js/                main.js · api.js · store.js · i18n.js · format.js · dom.js · toast.js
-  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · trust · risks · settings
+  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · trust · presence · risks · settings
   js/charts.js       SVG charts for the forecast and scorecard
 scripts/             refresh_daily.py (once-a-day job) · verify_proof.py (offline proof check)
 e2e/                 browser smoke test (Playwright)

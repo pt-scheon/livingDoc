@@ -53,6 +53,19 @@ CREATE TABLE IF NOT EXISTS trust_parties(
 CREATE TABLE IF NOT EXISTS trust_proofs(
     id TEXT PRIMARY KEY, branch TEXT NOT NULL, created_on TEXT NOT NULL, packet TEXT NOT NULL,
     open_key_hash TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0, leaves TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS presence_profiles(
+    branch TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL DEFAULT '', tagline TEXT NOT NULL DEFAULT '',
+    about TEXT NOT NULL DEFAULT '', area TEXT NOT NULL DEFAULT '', hours TEXT NOT NULL DEFAULT '', languages TEXT NOT NULL DEFAULT 'en,hi,gu',
+    show_products INTEGER NOT NULL DEFAULT 0, product_names TEXT NOT NULL DEFAULT '[]', show_trust INTEGER NOT NULL DEFAULT 0,
+    proof_id TEXT, published INTEGER NOT NULL DEFAULT 0, autonomy TEXT NOT NULL DEFAULT 'suggest' CHECK(autonomy IN ('off','suggest')),
+    budget_cap REAL NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS presence_drafts(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, branch TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('about','offer','trust_line')),
+    lang TEXT NOT NULL, text TEXT NOT NULL, why TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','approved','published','rejected')),
+    created_on TEXT NOT NULL, published_on TEXT, spend REAL NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS presence_log(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, branch TEXT NOT NULL, at TEXT NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
 """
 
