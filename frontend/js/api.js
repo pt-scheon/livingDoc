@@ -21,6 +21,7 @@ async function request(method, path, { query, body, timeout = 30000 } = {}) {
     if (!res.ok) {
       let msg = (data && data.detail) || res.statusText;
       if (Array.isArray(msg)) msg = msg.map((e) => `${(e.loc || []).slice(1).join(".")}: ${e.msg}`).join("; ");
+      if (res.status === 401 && !path.startsWith("/api/auth/")) window.dispatchEvent(new CustomEvent("ld:unauth"));
       throw new ApiError(String(msg), res.status);
     }
     return data;
@@ -33,6 +34,9 @@ async function request(method, path, { query, body, timeout = 30000 } = {}) {
 }
 
 export const api = {
+  authStatus: () => request("GET", "/api/auth/status"),
+  login: (password) => request("POST", "/api/auth/login", { body: { password } }),
+  logout: () => request("POST", "/api/auth/logout", { body: {} }),
   config: () => request("GET", "/api/config"),
   branches: () => request("GET", "/api/branches"),
   document: (branch, lang) => request("GET", "/api/document", { query: { branch, lang } }),

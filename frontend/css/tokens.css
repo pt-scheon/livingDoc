@@ -1,40 +1,49 @@
-/* Design tokens. Warm "ledger paper" look: ink on paper, one vermilion accent. */
+/* Design tokens. "Neel & Haldi": indigo-dye ink with a turmeric highlight, from Gujarat's bandhani cloth and shop signboards. */
 :root {
-  --bg: #efe9dd;
-  --paper: #fffdf8;
-  --paper-2: #f8f3e8;
-  --ink: #1f1c17;
-  --ink-2: #5b554a;
-  --line: #ded5c3;
-  --accent: #b83a0a;
+  --bg: #f2f4fa;
+  --paper: #ffffff;
+  --paper-2: #f5f6fb;
+  --ink: #12183a;
+  --ink-2: #4f5677;
+  --line: #dde1ee;
+  --accent: #2b3a9e;
   --accent-ink: #ffffff;
-  --accent-soft: #fbe6da;
-  --ok-bg: #dcf3e2;   --ok-fg: #14532d;
-  --low-bg: #fdf0c8;  --low-fg: #7a4a06;
-  --out-bg: #fbdcdc;  --out-fg: #8a1c1c;
-  --info-bg: #e3ecf8; --info-fg: #1e3a6b;
-  --shadow: 0 1px 2px rgb(60 40 10 / .08), 0 8px 24px rgb(60 40 10 / .08);
-  --radius: 14px;
-  --radius-sm: 8px;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", "Kohinoor Devanagari", "Kohinoor Gujarati", sans-serif;
-  --font-head: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", "Noto Serif Devanagari", "Noto Serif Gujarati", Georgia, serif;
+  --accent-soft: #e5e8fb;
+  --haldi: #f2b01e;
+  --haldi-ink: #3b2a00;
+  --side: #121a4a;
+  --side-ink: #dfe4ff;
+  --side-dim: #98a1d6;
+  --ok-bg: #dcf3e6;   --ok-fg: #11573a;
+  --low-bg: #fdf0c8;  --low-fg: #6f4604;
+  --out-bg: #fbdcdf;  --out-fg: #8d1c2a;
+  --info-bg: #e3e9fb; --info-fg: #1f3377;
+  --shadow: 0 1px 0 rgb(18 24 58 / .04);
+  --shadow-lift: 0 10px 30px -12px rgb(18 24 58 / .28);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-body: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", system-ui, -apple-system, "Segoe UI", Roboto, "Kohinoor Devanagari", "Kohinoor Gujarati", sans-serif;
+  --font-head: "Bricolage Grotesque", "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14120f;
-    --paper: #1d1a15;
-    --paper-2: #26221b;
-    --ink: #f2ece0;
-    --ink-2: #b4ab98;
-    --line: #3a342a;
-    --accent: #ff8a5c;
-    --accent-ink: #1a0c04;
-    --accent-soft: #3a2218;
-    --ok-bg: #173a24;   --ok-fg: #a8e6bb;
-    --low-bg: #4a3608;  --low-fg: #f6d58a;
-    --out-bg: #4a1818;  --out-fg: #f6b0b0;
-    --info-bg: #1b2d4d; --info-fg: #b7cff5;
-    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+    --bg: #0a0f2e;
+    --paper: #131a47;
+    --paper-2: #19215a;
+    --ink: #eef0ff;
+    --ink-2: #a9b1da;
+    --line: #28316e;
+    --accent: #93a4ff;
+    --accent-ink: #0a0f2e;
+    --accent-soft: #232d6b;
+    --haldi: #f6bd3c;
+    --side: #080c25;
+    --ok-bg: #123b2c;   --ok-fg: #a6e8c4;
+    --low-bg: #4a3a0c;  --low-fg: #f6d98a;
+    --out-bg: #4b1a26;  --out-fg: #f7b4be;
+    --info-bg: #1c2766; --info-fg: #bccaff;
+    --shadow: none;
+    --shadow-lift: 0 10px 30px -12px rgb(0 0 0 / .6);
   }
 }

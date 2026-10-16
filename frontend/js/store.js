@@ -2,7 +2,7 @@
 const state = {
   config: null, branches: [], branch: "", lang: "en",
   doc: null, movements: [], notes: [], syncStatus: null,
-  loading: true, online: true, lastError: null,
+  loading: true, online: true, lastError: null, view: "overview", auth: { required: false, authed: true },
 };
 const subscribers = new Set();
 export const getState = () => state;

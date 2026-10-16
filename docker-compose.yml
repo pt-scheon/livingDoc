@@ -1,0 +1,12 @@
+# docker compose up -d   ->  http://localhost:8000   (put a TLS proxy such as Caddy in front for a public domain)
+services:
+  livingdoc:
+    build: .
+    ports: ["8000:8000"]
+    env_file: [{ path: .env, required: false }]
+    environment:
+      LIVINGDOC_ADMIN_PASSWORD: ${LIVINGDOC_ADMIN_PASSWORD:?set LIVINGDOC_ADMIN_PASSWORD in .env}
+    volumes: ["livingdoc-data:/data"]
+    restart: unless-stopped
+volumes:
+  livingdoc-data:

@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from . import auth, security
 from .api import router
 from .forecast_api import router as forecast_router
 from .trust_api import router as trust_router
@@ -33,6 +34,9 @@ def create_app(serve_frontend: bool = True) -> FastAPI:
                   description="Self-updating business brain: notes and scanner events in, a live document out. Includes the Foresight demand & pricing forecaster under /api/forecast, /api/pricing, /api/factors, /api/scorecard, ...")
     origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["*"], allow_headers=["*"])
+    app.middleware("http")(auth.guard)
+    app.middleware("http")(security.headers)
+    app.include_router(auth.router)
     app.include_router(router)
     app.include_router(forecast_router)
     app.include_router(trust_router)

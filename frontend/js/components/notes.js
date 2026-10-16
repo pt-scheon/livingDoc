@@ -5,7 +5,7 @@ import { dateTime } from "../format.js";
 export function createNotes(actions) {
   const heading = h("h2", { id: "notes-h" });
   const label = h("label", { class: "visually-hidden", for: "note-text" });
-  const area = h("textarea", { id: "note-text", rows: 7, maxLength: 5000, "aria-describedby": "notes-h" });
+  const area = h("textarea", { id: "note-text", rows: 4, maxLength: 5000, "aria-describedby": "notes-h" });
   const submit = h("button", { class: "btn primary", type: "submit", id: "note-submit" });
   const mic = h("button", { class: "btn", type: "button", id: "mic-btn" });
   const result = h("div", { id: "note-result", "aria-live": "polite" });

@@ -1,0 +1,12 @@
+.git
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+*.db
+*.db-wal
+*.db-shm
+scanner_inbox
+e2e
+examples
+*.zip
+.env

@@ -1,4 +1,4 @@
-.PHONY: install dev run test e2e
+.PHONY: install dev run test e2e docker
 
 install:
 	pip install -r backend/requirements.txt
@@ -14,3 +14,6 @@ test:
 
 e2e:
 	pip install playwright && playwright install chromium && python e2e/browser_smoke.py
+
+docker:
+	docker compose up -d --build

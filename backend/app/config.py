@@ -28,6 +28,7 @@ class Settings:
     supplier_lead_days: int = field(default_factory=lambda: int(_env("LIVINGDOC_LEAD_DAYS", "3")))
     cors_origins: str = field(default_factory=lambda: _env("LIVINGDOC_CORS_ORIGINS", "*"))
     background_workers: bool = field(default_factory=lambda: _env("LIVINGDOC_WORKERS", "1") == "1")
+    admin_password: str = field(default_factory=lambda: _env("LIVINGDOC_ADMIN_PASSWORD", ""))  # empty = open mode (local use only)
     default_branch: str = "Main Store"
     currency: str = "\u20b9"
 
