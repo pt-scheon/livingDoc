@@ -1,5 +1,8 @@
 # LivingDoc: The Self-Updating Business Brain
 
+> 🌐 **Live Demo:** [https://wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com)  
+> 🔑 **Owner Password:** `admin`
+
 **A small business runs on memory, favours and one person's long days. LivingDoc turns the owner's messy notes and the
 scanner's stock events into a live business page, and warns about shortages (including festival surges and supplier
 shutdowns) before they happen.**
