@@ -152,3 +152,24 @@ def test_public_page_exposes_jsonld_for_search_engines(client):
 def test_text_limits_and_openapi(client):
     assert client.put("/api/presence", params=Q, json={"tagline": "x" * 500}).status_code == 400
     assert "/api/presence/public/{slug}" in client.get("/openapi.json").json()["paths"]
+
+
+def test_demo_storefront_is_off_by_default_and_seeds_once(client, monkeypatch):
+    from app.services import demo_storefront
+    assert demo_storefront.seed() is False
+    assert client.get(f"/api/presence/public/{slug(client)}").status_code == 404
+    monkeypatch.setenv("LIVINGDOC_DEMO_STOREFRONT", "1")
+    assert demo_storefront.seed() is True
+    page = client.get(f"/api/presence/public/{slug(client)}").json()
+    assert page["name"] == "Shah Provision" and page["posts"]
+    assert demo_storefront.seed() is False
+
+
+def test_forecast_chart_png_and_public_only_in_demo_mode(client, monkeypatch):
+    from app.config import settings
+    r = client.get("/api/forecast/chart.png", params=Q)
+    assert r.status_code == 200 and r.headers["content-type"] == "image/png" and r.content[:4] == b"\x89PNG"
+    monkeypatch.setattr(settings, "admin_password", "pw")
+    assert client.get("/api/forecast/chart.png").status_code == 401
+    monkeypatch.setenv("LIVINGDOC_DEMO_STOREFRONT", "1")
+    assert client.get("/api/forecast/chart.png").status_code == 200

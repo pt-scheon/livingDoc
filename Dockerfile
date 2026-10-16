@@ -1,7 +1,8 @@
 # LivingDoc: one container serves the API and the website. Data lives in /data (mount a volume there).
 FROM python:3.12-slim
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 \
+ENV LIVINGDOC_DEMO_STOREFRONT=1 \
+    PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 \
     LIVINGDOC_DB=/data/livingdoc.db LIVINGDOC_HUB=/data/livingdoc_hub.db LIVINGDOC_SCANNER_INBOX=/data/scanner_inbox
 
 WORKDIR /app

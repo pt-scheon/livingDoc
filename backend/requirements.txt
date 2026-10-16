@@ -6,3 +6,4 @@ requests>=2.31
 cryptography>=41
 ddgs>=9.0   # optional: daily web-trend search (falls back to labelled assumed scores)
 python-dotenv>=1.0   # optional: loads backend/.env
+matplotlib>=3.7   # forecast chart as a PNG at /api/forecast/chart.png

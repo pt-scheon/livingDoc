@@ -56,3 +56,9 @@ shop.example.com {
 - One shared owner password, no per-user accounts or roles.
 - SQLite on one container: fine for a shop or a few branches, not a large chain. Run a single instance.
 - The login rate limit is kept in memory, so it resets when the container restarts.
+
+
+## Public demo links (no sign-in needed)
+With `LIVINGDOC_DEMO_STOREFRONT=1` (set in the Dockerfile and render.yaml) the app creates a sample published storefront on first start and exposes `/shop.html?s=main-store`, `/docs` and `/api/forecast/chart.png` without a password. Everything else still needs the password. Remove the variable for a real shop.
+
+Render: `render.yaml` now uses the **free** plan with no disk. Free instances sleep when idle and reset data on restart; sample data and the storefront are rebuilt automatically.

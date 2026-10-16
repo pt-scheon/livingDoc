@@ -1,15 +1,20 @@
-# Render Blueprint: New > Blueprint > pick this repo. Needs a paid instance because the SQLite data sits on a persistent disk.
+# Render Blueprint: New > Blueprint > pick this repo. FREE plan, no disk, so nothing here costs money.
+# Trade-offs of free: the app sleeps after ~15 min idle (first visit takes ~30 s) and the SQLite data resets on each restart.
+# The sample data and the public storefront are re-created automatically on every start (LIVINGDOC_DEMO_STOREFRONT=1).
+# For real shop data, switch to `plan: starter` and add the disk block shown at the bottom.
 services:
   - type: web
     name: livingdoc
     runtime: docker
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
     autoDeploy: true
-    disk:
-      name: livingdoc-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: LIVINGDOC_ADMIN_PASSWORD
         sync: false          # you type it once in the Render dashboard
+      - key: LIVINGDOC_DEMO_STOREFRONT
+        value: "1"
+#    disk:                    # paid plans only: uncomment together with `plan: starter`
+#      name: livingdoc-data
+#      mountPath: /data
+#      sizeGB: 1

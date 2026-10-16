@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import os
 import re
 import time
 from collections import defaultdict, deque
@@ -70,6 +71,8 @@ def is_authed(request: Request) -> bool:
 
 
 def is_public(method: str, path: str) -> bool:
+    if method == "GET" and path == "/api/forecast/chart.png" and os.environ.get("LIVINGDOC_DEMO_STOREFRONT") == "1":
+        return True   # a picture of sample forecast numbers, public only on a demo deployment
     return any(m == method and rx.match(path) for m, rx in PUBLIC)
 
 

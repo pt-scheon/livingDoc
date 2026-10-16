@@ -13,6 +13,7 @@ from .forecast_api import router as forecast_router
 from .trust_api import router as trust_router
 from .presence_api import router as presence_router
 from .config import settings
+from .services import demo_storefront
 from .services.seed import init_db
 from .workers import Workers
 
@@ -25,6 +26,7 @@ def create_app(serve_frontend: bool = True) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         init_db()
+        demo_storefront.seed()
         if settings.background_workers:
             workers.start()
         yield

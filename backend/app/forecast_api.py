@@ -6,7 +6,7 @@ All routes take ?branch= (default: the default branch). Handlers are plain `def`
 from datetime import date as Date
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
 from .config import settings
@@ -117,6 +117,39 @@ class DemoIn(BaseModel):
 def get_forecast(branch: Optional[str] = None, horizon: int = Query(28, ge=1, le=90), history: int = Query(28, ge=0, le=90)):
     """Demand forecast with 50/80% bands. Also freezes today's forecast so the scorecard can grade it later."""
     return _run(fs.forecast, _branch(branch), horizon, history)
+
+
+@router.get("/forecast/chart.png", tags=["forecast"])
+def forecast_chart_png(branch: Optional[str] = None, horizon: int = Query(28, ge=7, le=90)):
+    """The forecast as a picture (expected daily orders with the 80% range), for slides and links. Same numbers as /api/forecast."""
+    import io
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    f = _run(fs.forecast, _branch(branch), horizon, 14)
+    days = f["days"]
+    x = list(range(len(days)))
+    fig, ax = plt.subplots(figsize=(10, 4.2), dpi=130)
+    ax.fill_between(x, [d["lo80"] for d in days], [d["hi80"] for d in days], color="#2b3a9e", alpha=.15, label="80% range")
+    ax.plot(x, [d["point"] for d in days], color="#2b3a9e", lw=2.2, label="Expected orders")
+    real = [(i, d["actual"]) for i, d in enumerate(days) if d.get("actual") is not None]
+    if real:
+        ax.scatter([i for i, _ in real], [v for _, v in real], color="#12183a", s=14, zorder=3, label="Actual")
+    first_future = next((i for i, d in enumerate(days) if d.get("is_future")), None)
+    if first_future is not None:
+        ax.axvline(first_future, color="#8a90b0", ls="--", lw=1)
+    step = max(1, len(days) // 8)
+    ax.set_xticks(x[::step])
+    ax.set_xticklabels([days[i]["date"][5:] for i in x[::step]], fontsize=8)
+    ax.set_ylabel("Orders per day")
+    ax.set_title(f"Demand forecast: {_branch(branch)} (assumptions are labelled in the app)", fontsize=10)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.legend(frameon=False, fontsize=8)
+    buf = io.BytesIO()
+    fig.tight_layout()
+    fig.savefig(buf, format="png")
+    plt.close(fig)
+    return Response(buf.getvalue(), media_type="image/png", headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/pricing", tags=["forecast"])
