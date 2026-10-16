@@ -1,0 +1,15 @@
+# Render Blueprint: New > Blueprint > pick this repo. Needs a paid instance because the SQLite data sits on a persistent disk.
+services:
+  - type: web
+    name: livingdoc
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: livingdoc-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: LIVINGDOC_ADMIN_PASSWORD
+        sync: false          # you type it once in the Render dashboard

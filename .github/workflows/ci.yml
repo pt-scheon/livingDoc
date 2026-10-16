@@ -27,3 +27,12 @@ jobs:
       - run: pip install -r backend/requirements.txt playwright
       - run: playwright install --with-deps chromium
       - run: python e2e/browser_smoke.py
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t livingdoc .
+      - run: |
+          docker run -d --name ld -p 8000:8000 -e LIVINGDOC_ADMIN_PASSWORD=ci-secret livingdoc
+          for i in $(seq 1 30); do curl -fs localhost:8000/api/health && break || sleep 2; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8000/api/document)" = "401"

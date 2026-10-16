@@ -32,7 +32,7 @@ coffees, used 2 milks, Dave paid 500 cash, remind me to order beans") and the pa
 - **Multiple branches** sync their stock movements hourly through a shared hub.
 
 **Tech.** FastAPI, pydantic, SQLite (WAL), pandas/numpy (forecasting), a dependency-free modular JavaScript frontend with an OpenAPI-documented REST
-API between them. 118 backend tests plus a real-browser smoke test.
+API between them. 127 backend tests plus a real-browser smoke test.
 
 **What is real and what is assumed.** The scanner hardware is assumed. The LLM is optional: without it, an English-only
-rule-based reader keeps the app working. There is no login yet, so it is meant for a trusted shop network.
+rule-based reader keeps the app working. An optional owner password protects every private screen when it is hosted on the internet; there are no per-user accounts yet.

@@ -107,6 +107,8 @@ Without an LLM, the simple reader understands English only.
 | `LIVINGDOC_SYNC_SECONDS` | `3600` | Branch sync interval |
 | `LIVINGDOC_LEAD_DAYS` | `3` | Default supplier lead time (editable in Settings) |
 | `LIVINGDOC_WORKERS` | `1` | `0` disables the background loop |
+| `LIVINGDOC_ADMIN_PASSWORD` | *(empty = open)* | **Set this before hosting on the internet.** Turns on the owner sign-in (see [Hosting](#hosting-it-on-the-internet)) |
+| `LIVINGDOC_CSP` | `1` | `0` turns off the Content-Security-Policy header |
 | `LIVINGDOC_CORS_ORIGINS` | `*` | Allowed origins when the frontend is hosted elsewhere |
 | `LIVINGDOC_FRONTEND` | `../frontend` | Folder served at `/` |
 | `LIVINGDOC_FORESIGHT_DIR` | `<db folder>/foresight_data` | Folder holding one Foresight SQLite file per branch |
@@ -192,7 +194,7 @@ The design answer is **two views, two consents, bands not names**.
 **Honest limits.**
 - This is a signed, committed, selectively-openable attestation. It is **not zero-knowledge**: the verifier trusts the shop's signature for the totals, and the spot-check only samples a few entries.
 - Claims say nothing about entries kept private or withheld by the other person.
-- The person's identity on their link is whoever holds the link; there is no login. Anyone with the link can answer for that person, so send it only to them and turn it off from the ledger if it leaks.
+- The person's identity on their link is whoever holds the link; there is no per-person login. Anyone with the link can answer for that person, so send it only to them and turn it off from the ledger if it leaks.
 - The open key is a bearer secret: whoever has it (plus a proof id) can run challenges for that proof.
 - The signing key lives in the database next to the data; protect the database file.
 - Forecast odds are a model of past behaviour with a stated prior, not a promise of payment.
@@ -208,7 +210,25 @@ The design answer is **two views, two consents, bands not names**.
 
 **Being found.** The public page carries schema.org `LocalBusiness` JSON-LD so search engines and assistants can read it, and a trust section: the band-level claims of a signed proof that any visitor can check with one tap (no names, no amounts). Trust here means *checkable*, not *audited*.
 
-**Honest limits.** The page is served by this app: to be reachable on the internet it must be hosted behind HTTPS (the owner admin screens still have no login, so host only the public page or add authentication). Drafts are filled-in templates, not a language model, so they are plain on purpose. No ad platform or social network is connected.
+**Honest limits.** The page is served by this app: to be reachable on the internet it must be hosted behind HTTPS (set `LIVINGDOC_ADMIN_PASSWORD` so the owner screens stay private while the public page stays open). Drafts are filled-in templates, not a language model, so they are plain on purpose. No ad platform or social network is connected.
+
+## Hosting it on the internet
+
+One container serves the website and the API. See **[DEPLOY.md](DEPLOY.md)** for step-by-step Render, Fly.io and own-server instructions.
+
+```bash
+cp .env.example .env            # set LIVINGDOC_ADMIN_PASSWORD
+docker compose up -d --build    # http://localhost:8000
+```
+
+- **Sign-in.** With `LIVINGDOC_ADMIN_PASSWORD` set, the owner screens and API need a password. Still public on purpose: the shop's public page, proof checking, `/api/health`, and each person's private link (its secret token is the credential). Scanners and scripts can send `Authorization: Bearer <password>`.
+- **Security headers.** `nosniff`, `no-referrer` (private links carry a token), frame blocking, a Content-Security-Policy, and HSTS over HTTPS.
+- **Data.** SQLite files live in `/data`; mount a persistent volume there or you lose them on redeploy.
+- **HANDOFF.md** is the brief for a coding agent (for example Antigravity) to review, commit, push and deploy.
+
+## The interface
+
+Sidebar on desktop and a bottom tab bar on phones, one screen per area (Today, Stock, Money, Forecast, Trust, Be found; the URL hash, e.g. `#/trust`, selects it). **Today** opens with how many things need the owner, four live numbers and a one-tap note box. Palette: indigo ink with a turmeric highlight, light and dark. Fonts: Bricolage Grotesque with Noto Sans (Devanagari and Gujarati included), loaded from Google Fonts and falling back to system fonts offline. Keyboard focus is visible and reduced-motion is respected.
 
 ## Connecting the scanner
 
@@ -266,8 +286,8 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 118 tests
-pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 33 checks
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 127 tests
+pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 42 checks
 ```
 
 The backend tests cover the engine, extraction and validation (including a fake LLM and garbage LLM output), stock math,
@@ -289,6 +309,8 @@ backend/
     engine.py        festive prediction engine
     i18n.py          server-side translations (EN/HI/GU)
     forecast_api.py  Forecast & Pricing routes
+    auth.py          Optional owner login (signed session cookie)
+    security.py      Security headers
     trust_api.py     Trust ledger, promise cash flow and proof routes
     presence_api.py  Public shop page, drafting helper, audit log
     workers.py       background loop (scanner inbox, hourly sync, daily forecast job)
@@ -298,8 +320,9 @@ backend/
 frontend/
   index.html  party.html  shop.html  config.js  css/
   js/                main.js · api.js · store.js · i18n.js · format.js · dom.js · toast.js
-  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · trust · presence · risks · settings
+  js/components/     shell (sidebar + Today hero) · login · header · notes · scanner · inventory · cash · promises · forecast · foresight · trust · presence · risks · settings
   js/charts.js       SVG charts for the forecast and scorecard
+Dockerfile  docker-compose.yml  render.yaml  fly.toml  .env.example  DEPLOY.md  HANDOFF.md
 scripts/             refresh_daily.py (once-a-day job) · verify_proof.py (offline proof check)
 e2e/                 browser smoke test (Playwright)
 examples/            sample scanner files and notes
@@ -313,7 +336,7 @@ static host), set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/conf
 
 ## Limitations (please read before using it for a real shop)
 
-- **No login.** Anyone who can reach the server can read and change the data. Keep it on `127.0.0.1` or inside the shop's network, and put it behind a reverse proxy with authentication before exposing it to the internet.
+- **One shared owner password.** With `LIVINGDOC_ADMIN_PASSWORD` set, one password protects every owner screen and API route (7-day signed session cookie, wrong passwords rate-limited). There are no per-user accounts or roles. Without it the app is open: use that only on `127.0.0.1` or a trusted network.
 - **Branch sync** covers stock movements only; cash and promises stay per branch. The "hub" is a SQLite file on a shared path, which suits a few branches, not a large chain.
 - **Cash tracking vs the trust ledger.** The cash section's "owed" means a customer owes the business; money the business owes (and favours, and words) lives in the Trust ledger.
 - **Voice input** relies on the browser's speech recognition; support for Hindi and Gujarati varies by browser, and it has not been tested here.
