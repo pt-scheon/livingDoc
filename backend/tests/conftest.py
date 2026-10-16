@@ -27,6 +27,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "hub_path", str(tmp_path / "hub.db"))
     monkeypatch.setattr(settings, "scanner_inbox", str(tmp_path / "inbox"))
     monkeypatch.setattr(settings, "background_workers", False)
+    monkeypatch.setattr(settings, "admin_password", "")
     monkeypatch.setattr(extraction, "_LLM_DOWN_UNTIL", time.time() + 3600)
     monkeypatch.setitem(extraction._STATUS_CACHE, "value", None)
     seed.init_db()
