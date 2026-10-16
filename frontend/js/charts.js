@@ -83,3 +83,26 @@ export function scoreChart({ rows, labels, lang }) {
   rows.forEach((r, i) => { if (i % step === 0) svg.append(text(shortDate(r.date, lang), { x: x(i), y: H - 8, class: "ch-axis", "text-anchor": "middle" })); });
   return svg;
 }
+
+/** Cash from promises: days [{date, net_p10, net_p50, net_p90}] with a zero line. */
+export function cashChart({ days, labels, lang }) {
+  const W = 720, H = 260, L = 56, R = 12, T = 12, B = 28;
+  const n = days.length;
+  const x = (i) => L + (n <= 1 ? 0 : (i / (n - 1)) * (W - L - R));
+  const lo = Math.min(0, ...days.map((d) => d.net_p10)), hi = Math.max(1, ...days.map((d) => d.net_p90));
+  const span = hi - lo || 1, pad = span * 0.06;
+  const y = (v) => T + (1 - (v - (lo - pad)) / (span + 2 * pad)) * (H - T - B);
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": labels.ariaLabel });
+  for (let g = 0; g <= 4; g++) {
+    const v = lo + (span / 4) * g;
+    svg.append(s("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "ch-grid" }), text(Math.round(v).toLocaleString(), { x: L - 6, y: y(v) + 4, class: "ch-axis", "text-anchor": "end" }));
+  }
+  const path = (pts) => pts.map(([px, py], i) => `${i ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`).join("");
+  const up = days.map((d, i) => [x(i), y(d.net_p90)]), dn = days.map((d, i) => [x(i), y(d.net_p10)]).reverse();
+  svg.append(s("path", { d: path([...up, ...dn]) + "Z", class: "ch-band80" }));
+  svg.append(s("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), class: "ch-zero" }));
+  svg.append(s("path", { d: path(days.map((d, i) => [x(i), y(d.net_p50)])), class: "ch-line", fill: "none" }));
+  const step = Math.max(1, Math.round(n / 7));
+  days.forEach((d, i) => { if (i % step === 0) svg.append(text(shortDate(d.date, lang), { x: x(i), y: H - 8, class: "ch-axis", "text-anchor": "middle" })); });
+  return svg;
+}

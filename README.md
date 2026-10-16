@@ -44,6 +44,7 @@ deterministic English rule parser takes over, so the app keeps working.
 | **Handshakes & promises** | Checklist (`[ ]` / `[x]`) created from notes, tick them off in the page. |
 | **Quiet breakage warnings** | Automatic detection: out of stock, will run out before the supplier can deliver, overdue debts, one customer holding most of the unpaid money, stale promises, silent scanner, lagging branch sync, sales drop, placeholder items awaiting review. Warnings noted from your notes can be marked done. |
 | **Festive predictions** | Surge multiplier, supplier blackout buffer, reorder deadline so stock arrives 48 h before the surge, perishable overstock guard. Editable festival calendar and lead time. |
+| **Trust ledger, proof without exposure, promise → cash flow** | Every promise (money owed, money we owe, favours, someone's word) keeps *both* sides' figures. Each person gets a private link to see, dispute and veto what is recorded about them. Open money promises are turned into a seeded cash-flow forecast, and the shop can sign a proof of a few band-level facts without showing names or amounts. See [Trust ledger](#trust-ledger-proof-without-exposure-promise--cash-flow). |
 | **Forecast & Pricing** | Daily demand forecast with 50/80% ranges (weather, paydays, festivals, rival promotions, your own factors), a per-product raise / sale / hold plan with prep quantities capped by real stock, a scorecard that grades only forecasts frozen before the day, and an Owner desk where you add things the data cannot see and log real days so the AI's belief visibly updates. Integrated from the Foresight module. See [Forecast & Pricing](#forecast--pricing-foresight). |
 | **Scanner** | Accepts files (`.json`, `.jsonl`, `.csv`) dropped in a folder **or** JSON posted to the API. Duplicate-safe, never lets stock go negative, flags problems instead of crashing. |
 | **Multi-branch** | Stock movements upload hourly to a shared hub and are pulled by every other branch. Repeat syncs change nothing. |
@@ -139,6 +140,11 @@ Full, interactive reference at `/docs` (Swagger) and `/redoc`. Summary:
 | `GET /api/trends`, `POST /api/trends/refresh` | Cached web-trend scores (never hits the network) / run the search now |
 | `GET/PUT /api/foresight/profile`, `PUT /api/foresight/products/{name}`, `GET/PUT /api/foresight/festivals`, `POST /api/foresight/festivals/reset` | Assumptions: location, income, rivals, guardrails, product prices/costs/elasticity, festival calendar |
 | `POST/DELETE /api/foresight/demo`, `GET /api/foresight/learned`, `POST /api/foresight/daily` | Demo mode (rows tagged `demo`), starting vs learned coefficients, run the daily job |
+| `GET /api/trust/ledger`, `POST /api/trust/entries`, `PATCH/DELETE /api/trust/entries/{id}`, `POST /api/trust/entries/{id}/resolve` | Promise ledger with both figures, scores and consent state; add, edit, delete, mark kept/broken/forgiven |
+| `POST/DELETE /api/trust/parties/link`, `GET /api/trust/party/{token}`, `POST /api/trust/party/{token}/entries/{id}` | The other person's private link: see only their own records, state their figure, dispute, grant or withhold proof consent |
+| `GET /api/cashflow/promises?horizon=&opening_cash=&include_sales=` | Day-by-day cash from open promises (10/50/90%), per-promise odds, warnings, every assumption |
+| `GET /api/proofs/preview`, `GET/POST /api/proofs`, `GET /api/proofs/{id}`, `POST /api/proofs/{id}/revoke` | Preview what a proof reveals, sign it, list, fetch, revoke |
+| `POST /api/proofs/verify`, `POST /api/proofs/{id}/open`, `POST /api/proofs/check-openings` | Verifier tools: check signature/expiry/revocation, spot-check challenge, check the openings |
 | `GET /api/audit` | Check that every stock count equals the sum of its movement log |
 
 ## Forecast & Pricing (Foresight)
@@ -166,6 +172,26 @@ engine, vendored in `backend/foresight/` (pure Python; its matplotlib charts are
 **Daily job.** `python scripts/refresh_daily.py` (run from `backend/`, see the file for cron / Task Scheduler / launchd examples) refreshes web trends, imports yesterday's numbers and freezes today's forecast for every branch. The server runs the same job itself once a day while its background workers are on.
 
 **Honest limits.** Capacity is today's stock (incoming deliveries are not modelled). Trend scoring is keyword-based and noisy: a nudge of at most 12%, not a driver. Until real days are logged the forecast runs on assumptions and its ranges are widened accordingly. Foresight's explanations are translated into Hindi/Gujarati by reason code; festival, product and driver names typed by you are shown as written.
+
+## Trust ledger, proof without exposure, promise → cash flow
+
+The question this answers: *when a promise is both an asset and someone's private story, who may see it, and who decides what it is worth?*
+The design answer is **two views, two consents, bands not names**.
+
+- **Two views of every promise.** Each entry stores the shop's figure and, separately, the other person's figure. They are never silently merged. If they differ by more than 10%, or either side disputes, the entry is flagged *disputed* and shows a range ("worth ₹X to ₹Y, depending on whose view"). Outsiders only ever get the conservative figure (the lower one for money owed to the shop, the higher for money the shop owes).
+- **The other person has a say.** *Share their view* makes a private link (`/party.html?t=…`). That page shows exactly what is recorded about that one person, how their reliability score is worked out, and lets them state their own figure, add a note, dispute, or **say no to being counted in any proof**. Money debts and promises about other people in your notes are mirrored here automatically (as private entries); amounts of mirrored entries can only change through the cash/notes flow.
+- **Private by default.** An entry is counted in a proof only if the shop opted it in **and** the other person has not withheld consent.
+- **Fair scoring.** Reliability counts resolved promises only: kept on time = 1, kept late = 0.6, broken = 0; forgiven ones are ignored; a starting belief of 80% is worth two promises, so a single event never decides anything. The formula is shown to the shop and to the person scored.
+- **Promise → cash flow.** Open money promises become a 2,000-run seeded simulation (same ledger, same answer). A promise arrives with probability = the person's score × a decay for how overdue it is × 0.6 if disputed, on its due date plus that person's usual delay. Money the shop owes is paid on its due date. Favours and words carry no cash. Opening cash is only what you type; Foresight's expected sales can be added and are labelled as an assumption. Warnings: possible shortfall (≥20% chance), one person making up more than half of what you expect, overdue and disputed money.
+- **Proof without exposure.** The shop picks which claims to sign: *owed to us is at least a band floor*, *at least N people*, *nothing more than N days overdue*, *no single person above X%*, *at least X% of resolved promises kept* (needs ≥5 resolved, so small samples cannot identify people), *we owe at most a band*. Before signing, the page shows exactly what would be revealed and which entries are excluded and why. Each counted entry becomes a salted hash in a Merkle tree; the root and claims are signed with Ed25519 (valid 7 days by default, revocable). A verifier can paste the packet to check signature, expiry and revocation, or **challenge** the shop: the entries to open are derived from the root plus the verifier's random nonce, so the shop cannot cherry-pick flattering ones. Names are hidden in openings, and opening requires the one-time *open key* shown when the proof is signed. `python scripts/verify_proof.py packet.json` verifies signature and expiry offline.
+
+**Honest limits.**
+- This is a signed, committed, selectively-openable attestation. It is **not zero-knowledge**: the verifier trusts the shop's signature for the totals, and the spot-check only samples a few entries.
+- Claims say nothing about entries kept private or withheld by the other person.
+- The person's identity on their link is whoever holds the link; there is no login. Anyone with the link can answer for that person, so send it only to them and turn it off from the ledger if it leaks.
+- The open key is a bearer secret: whoever has it (plus a proof id) can run challenges for that proof.
+- The signing key lives in the database next to the data; protect the database file.
+- Forecast odds are a model of past behaviour with a stated prior, not a promise of payment.
 
 ## Connecting the scanner
 
@@ -223,12 +249,12 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 78 tests
-pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 16 checks
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 104 tests
+pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 29 checks
 ```
 
 The backend tests cover the engine, extraction and validation (including a fake LLM and garbage LLM output), stock math,
-FIFO debt settlement, scanner edge cases, branch sync convergence, every API route including the Forecast & Pricing routes and Foresight's own 24 model/pricing/learning tests (including 40 parallel scanner requests
+FIFO debt settlement, scanner edge cases, branch sync convergence, every API route including the Forecast & Pricing routes, the trust ledger (two-sided consent, scoring, cash-flow determinism, proof signing/tamper/expiry/revocation, no-leak and challenge checks) and Foresight's own 24 model/pricing/learning tests (including 40 parallel scanner requests
 leaving the stock exactly consistent). The browser test drives the real UI: submits a note, scans, switches language, edits
 the festival calendar, checks that markup in a note is shown as text rather than executed, and checks for no horizontal
 scrolling on a phone-sized screen.
@@ -246,16 +272,17 @@ backend/
     engine.py        festive prediction engine
     i18n.py          server-side translations (EN/HI/GU)
     forecast_api.py  Forecast & Pricing routes
+    trust_api.py     Trust ledger, promise cash flow and proof routes
     workers.py       background loop (scanner inbox, hourly sync, daily forecast job)
-    services/        extraction · inventory · ledger · scanner · sync · document · catalog · forecasting · seed
+    services/        extraction · inventory · ledger · scanner · sync · document · catalog · forecasting · trust · cashflow · proofs · seed
   foresight/         vendored demand & pricing engine (model, pricing, owner learning, scorecard, trends, weather)
   tests/             pytest suite
 frontend/
-  index.html  config.js  css/
+  index.html  party.html  config.js  css/
   js/                main.js · api.js · store.js · i18n.js · format.js · dom.js · toast.js
-  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · risks · settings
+  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · trust · risks · settings
   js/charts.js       SVG charts for the forecast and scorecard
-scripts/             refresh_daily.py (once-a-day Forecast & Pricing job)
+scripts/             refresh_daily.py (once-a-day job) · verify_proof.py (offline proof check)
 e2e/                 browser smoke test (Playwright)
 examples/            sample scanner files and notes
 ```
@@ -270,7 +297,7 @@ static host), set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/conf
 
 - **No login.** Anyone who can reach the server can read and change the data. Keep it on `127.0.0.1` or inside the shop's network, and put it behind a reverse proxy with authentication before exposing it to the internet.
 - **Branch sync** covers stock movements only; cash and promises stay per branch. The "hub" is a SQLite file on a shared path, which suits a few branches, not a large chain.
-- **"Owed" means a customer owes the business.** Money the business owes suppliers is not modelled.
+- **Cash tracking vs the trust ledger.** The cash section's "owed" means a customer owes the business; money the business owes (and favours, and words) lives in the Trust ledger.
 - **Voice input** relies on the browser's speech recognition; support for Hindi and Gujarati varies by browser, and it has not been tested here.
 - **Hindi/Gujarati notes need an LLM.** The offline reader is English only. Forecast "Why" explanations are in English; headings, tables, buttons and warnings are translated.
 - **Starter data is made up.** Festival dates (Diwali 8 Nov 2026, Christmas, Uttarayan) and surge multipliers are starting guesses; set your own in Settings. Predictions improve as real usage is logged (burn rate is learned from the last 30 days).

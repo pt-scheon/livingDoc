@@ -36,6 +36,23 @@ CREATE TABLE IF NOT EXISTS notes(
 CREATE TABLE IF NOT EXISTS festivals(
     name TEXT NOT NULL, date TEXT NOT NULL, surge_multiplier REAL NOT NULL,
     supplier_blackout_days INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(name, date));
+CREATE TABLE IF NOT EXISTS trust_entries(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, branch TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK(kind IN ('owed_to_us','we_owe','favour_given','favour_owed','word')),
+    counterparty TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'other', description TEXT NOT NULL DEFAULT '',
+    amount REAL, settled REAL NOT NULL DEFAULT 0, cp_amount REAL, cp_note TEXT NOT NULL DEFAULT '',
+    created_on TEXT NOT NULL, due_on TEXT, resolved_on TEXT,
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','kept','broken','forgiven')),
+    disputed INTEGER NOT NULL DEFAULT 0,
+    proof_owner INTEGER NOT NULL DEFAULT 0, proof_cp INTEGER,
+    source_ref TEXT UNIQUE, salt TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS ix_trust_branch ON trust_entries(branch, status);
+CREATE TABLE IF NOT EXISTS trust_parties(
+    token TEXT PRIMARY KEY, branch TEXT NOT NULL, name_key TEXT NOT NULL, name TEXT NOT NULL, created_on TEXT NOT NULL,
+    UNIQUE(branch, name_key));
+CREATE TABLE IF NOT EXISTS trust_proofs(
+    id TEXT PRIMARY KEY, branch TEXT NOT NULL, created_on TEXT NOT NULL, packet TEXT NOT NULL,
+    open_key_hash TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0, leaves TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
 """
 

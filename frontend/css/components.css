@@ -137,3 +137,15 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
 .fp-panel table td:first-child input { max-width: 170px; }
 .fp-panel .field input, .fp-panel .field select { min-width: 0; }
 @media (max-width: 560px) { .drivers li { grid-template-columns: 1fr 70px 50px; } }
+.ch-zero { stroke: var(--out-fg); stroke-dasharray: 5 3; stroke-width: 1.2; }
+
+/* ---- Trust ledger & promises ---- */
+.tl-tabs { margin-bottom: 12px; flex-wrap: wrap; }
+.tl-flags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.tl-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+.tl-people, .tl-proofs, .tl-claims { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 6px; }
+.tl-url { width: 100%; margin: 6px 0; font-family: var(--font-mono, monospace); font-size: .8rem; }
+#tl-section textarea, .tl-party-entry textarea { width: 100%; font-family: var(--font-mono, monospace); font-size: .78rem; }
+#tl-section code { word-break: break-all; }
+.tl-party-entry { margin-top: 12px; }
+@media (max-width: 640px) { #tl-section .table-wrap table { min-width: 640px; } }

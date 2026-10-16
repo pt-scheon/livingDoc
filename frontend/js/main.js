@@ -12,6 +12,7 @@ import { createCash } from "./components/cash.js";
 import { createPromises } from "./components/promises.js";
 import { createForecast } from "./components/forecast.js";
 import { createForesight } from "./components/foresight.js";
+import { createTrust } from "./components/trust.js";
 import { createRisks } from "./components/risks.js";
 import { createSettings } from "./components/settings.js";
 import { dateTime } from "./format.js";
@@ -93,26 +94,27 @@ const cash = createCash();
 const promises = createPromises(actions);
 const forecast = createForecast();
 const foresight = createForesight();
+const trust = createTrust();
 const risks = createRisks(actions);
 
 const docTitle = h("h1", { class: "doc-title", id: "doc-title" });
 const docSub = h("p", { class: "doc-sub" });
 const skeleton = h("div", {}, h("div", { class: "skeleton" }), h("div", { class: "skeleton" }), h("div", { class: "skeleton" }));
 const paper = h("article", { class: "card paper", id: "doc", tabindex: "-1", "aria-labelledby": "doc-title" },
-  docTitle, docSub, skeleton, inventory.el, cash.el, promises.el, forecast.el, foresight.el, risks.el);
+  docTitle, docSub, skeleton, inventory.el, cash.el, promises.el, forecast.el, foresight.el, trust.el, risks.el);
 
 const app = document.getElementById("app");
 app.append(h("div", { class: "shell" }, header.el,
   h("main", { class: "grid" }, h("div", { class: "col-left" }, notes.el, scanner.el), paper)), settings.el);
 
-const parts = [header, notes, scanner, inventory, cash, promises, forecast, foresight, risks, settings];
+const parts = [header, notes, scanner, inventory, cash, promises, forecast, foresight, trust, risks, settings];
 subscribe((s) => {
   parts.forEach((p) => p.update(s));
   const L = (k) => t(s.lang, k);
   docTitle.textContent = `📄 ${s.branch ? s.branch + " · " : ""}${L("doc_title")}`;
   docSub.textContent = s.doc ? `${L("updated")}: ${dateTime(s.doc.generated_at, s.lang)}` : "";
   skeleton.hidden = !s.loading || !!s.doc;
-  [inventory.el, cash.el, promises.el, forecast.el, foresight.el, risks.el].forEach((el) => { el.hidden = !s.doc; });
+  [inventory.el, cash.el, promises.el, forecast.el, foresight.el, trust.el, risks.el].forEach((el) => { el.hidden = !s.doc; });
   const skip = document.querySelector(".skip"); if (skip) skip.textContent = L("skip");
   app.removeAttribute("aria-busy");
 });

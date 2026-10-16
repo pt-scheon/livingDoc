@@ -26,10 +26,12 @@ coffees, used 2 milks, Dave paid 500 cash, remind me to order beans") and the pa
 - **Early warnings.** A festive prediction engine multiplies demand in the week before a festival, adds the supplier's blackout days to the lead time, and back-calculates the last safe order date so stock arrives 48 hours before the surge. It also stops owners over-ordering perishables.
 - **Quiet breakage detection.** The page watches for overdue debts, one customer holding most of the unpaid money, stale promises, a silent scanner, a lagging branch sync and an item that will run out before a delivery can arrive.
 - **Forecast & pricing.** A Bayesian demand model (weather, paydays, festivals, rival promotions, owner-added factors) starts from labelled assumptions and is pulled toward reality as real days are logged. It recommends raise / sale / hold prices and prep quantities capped by real stock, and a scorecard grades only forecasts made before the day.
+- **Trust ledger and promise cash flow.** Money owed, money we owe, favours and someone's word are kept as promises with *both* sides' figures. The other person gets a private link to see, dispute and veto what is recorded about them. Open promises feed a seeded cash-flow forecast with a 10/50/90% range.
+- **Proof without exposure.** The shop can sign band-level claims ("owed at least ₹5,000 by at least 2 people, nothing over 7 days late") built only from entries both sides allowed, with no names or amounts, plus a verifier challenge that picks the entries to open. Honestly labelled selective disclosure, not zero-knowledge.
 - **Multiple branches** sync their stock movements hourly through a shared hub.
 
 **Tech.** FastAPI, pydantic, SQLite (WAL), pandas/numpy (forecasting), a dependency-free modular JavaScript frontend with an OpenAPI-documented REST
-API between them. 27 backend tests plus a real-browser smoke test.
+API between them. 104 backend tests plus a real-browser smoke test.
 
 **What is real and what is assumed.** The scanner hardware is assumed. The LLM is optional: without it, an English-only
 rule-based reader keeps the app working. There is no login yet, so it is meant for a trusted shop network.
