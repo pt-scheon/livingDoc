@@ -43,7 +43,8 @@ def _http_chat(messages):
     body = {"model": settings.llm_model, "messages": messages, "temperature": 0, "response_format": {"type": "json_object"}}
     req = urllib.request.Request(
         settings.llm_base_url.rstrip("/") + "/chat/completions", data=json.dumps(body).encode("utf-8"), method="POST",
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {settings.llm_api_key}"})
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {settings.llm_api_key}",
+                 "User-Agent": "LivingDoc/1.0"})
     with urllib.request.urlopen(req, timeout=settings.llm_timeout) as r:
         data = json.load(r)
     return data["choices"][0]["message"]["content"]
@@ -276,7 +277,8 @@ def llm_status(max_age=30.0):
     online = False
     try:
         req = urllib.request.Request(settings.llm_base_url.rstrip("/") + "/models",
-                                     headers={"Authorization": f"Bearer {settings.llm_api_key}"})
+                                     headers={"Authorization": f"Bearer {settings.llm_api_key}",
+                                              "User-Agent": "LivingDoc/1.0"})
         with urllib.request.urlopen(req, timeout=2) as r:
             online = 200 <= r.status < 300
     except Exception:
