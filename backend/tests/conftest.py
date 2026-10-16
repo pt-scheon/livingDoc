@@ -10,6 +10,16 @@ from app.config import settings  # noqa: E402
 from app.services import extraction, seed  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def foresight_offline(monkeypatch):
+    """Tests never touch the network: live weather and the web search are off, so every run is deterministic."""
+    from foresight import trends, weather
+    monkeypatch.setenv("LIVINGDOC_FORESIGHT_LIVE", "0")
+    monkeypatch.setattr(weather, "_fetch_live", lambda *a, **k: None)
+    monkeypatch.setattr(trends, "_search", lambda *a, **k: [])
+    weather._CACHE.clear()
+
+
 @pytest.fixture()
 def env(tmp_path, monkeypatch):
     """Fresh seeded database, hub and scanner inbox per test. LLM forced offline (rule parser) unless a test turns it on."""

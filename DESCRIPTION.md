@@ -25,9 +25,10 @@ coffees, used 2 milks, Dave paid 500 cash, remind me to order beans") and the pa
 - **Scanner events** arrive as files in a folder or as JSON over HTTP, and are applied the same deterministic way. Duplicates are ignored, stock can never go negative, and problems become warnings instead of crashes.
 - **Early warnings.** A festive prediction engine multiplies demand in the week before a festival, adds the supplier's blackout days to the lead time, and back-calculates the last safe order date so stock arrives 48 hours before the surge. It also stops owners over-ordering perishables.
 - **Quiet breakage detection.** The page watches for overdue debts, one customer holding most of the unpaid money, stale promises, a silent scanner, a lagging branch sync and an item that will run out before a delivery can arrive.
+- **Forecast & pricing.** A Bayesian demand model (weather, paydays, festivals, rival promotions, owner-added factors) starts from labelled assumptions and is pulled toward reality as real days are logged. It recommends raise / sale / hold prices and prep quantities capped by real stock, and a scorecard grades only forecasts made before the day.
 - **Multiple branches** sync their stock movements hourly through a shared hub.
 
-**Tech.** FastAPI, pydantic, SQLite (WAL), a dependency-free modular JavaScript frontend with an OpenAPI-documented REST
+**Tech.** FastAPI, pydantic, SQLite (WAL), pandas/numpy (forecasting), a dependency-free modular JavaScript frontend with an OpenAPI-documented REST
 API between them. 27 backend tests plus a real-browser smoke test.
 
 **What is real and what is assumed.** The scanner hardware is assumed. The LLM is optional: without it, an English-only

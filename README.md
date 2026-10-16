@@ -44,6 +44,7 @@ deterministic English rule parser takes over, so the app keeps working.
 | **Handshakes & promises** | Checklist (`[ ]` / `[x]`) created from notes, tick them off in the page. |
 | **Quiet breakage warnings** | Automatic detection: out of stock, will run out before the supplier can deliver, overdue debts, one customer holding most of the unpaid money, stale promises, silent scanner, lagging branch sync, sales drop, placeholder items awaiting review. Warnings noted from your notes can be marked done. |
 | **Festive predictions** | Surge multiplier, supplier blackout buffer, reorder deadline so stock arrives 48 h before the surge, perishable overstock guard. Editable festival calendar and lead time. |
+| **Forecast & Pricing** | Daily demand forecast with 50/80% ranges (weather, paydays, festivals, rival promotions, your own factors), a per-product raise / sale / hold plan with prep quantities capped by real stock, a scorecard that grades only forecasts frozen before the day, and an Owner desk where you add things the data cannot see and log real days so the AI's belief visibly updates. Integrated from the Foresight module. See [Forecast & Pricing](#forecast--pricing-foresight). |
 | **Scanner** | Accepts files (`.json`, `.jsonl`, `.csv`) dropped in a folder **or** JSON posted to the API. Duplicate-safe, never lets stock go negative, flags problems instead of crashing. |
 | **Multi-branch** | Stock movements upload hourly to a shared hub and are pulled by every other branch. Repeat syncs change nothing. |
 | **Languages** | English, हिन्दी, ગુજરાતી for the whole interface and for generated warnings. |
@@ -106,6 +107,9 @@ Without an LLM, the simple reader understands English only.
 | `LIVINGDOC_WORKERS` | `1` | `0` disables the background loop |
 | `LIVINGDOC_CORS_ORIGINS` | `*` | Allowed origins when the frontend is hosted elsewhere |
 | `LIVINGDOC_FRONTEND` | `../frontend` | Folder served at `/` |
+| `LIVINGDOC_FORESIGHT_DIR` | `<db folder>/foresight_data` | Folder holding one Foresight SQLite file per branch |
+| `LIVINGDOC_FORESIGHT_LIVE` | `1` | `0` forbids live weather calls (assumed climate only) |
+| `LIVINGDOC_FORESIGHT_AUTOIMPORT` | `1` | Daily job imports yesterday's LivingDoc numbers as sales (`0` to skip) |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT` | Ollama / `llama3.1` / 45 s | LLM connection |
 
 ## REST API
@@ -125,7 +129,43 @@ Full, interactive reference at `/docs` (Swagger) and `/redoc`. Summary:
 | `POST /api/sync`, `GET /api/sync/status` | Branch sync now / status |
 | `GET/POST/DELETE /api/festivals`, `PUT /api/settings/lead-days` | Festival calendar and supplier lead time |
 | `PATCH /api/promises/{id}`, `POST /api/risks/{id}/resolve` | Tick a promise, mark a noted warning done |
+| `GET /api/forecast?horizon=&history=` | Demand forecast with 50/80% bands, festival spans, weather source, model state and assumption flags (also freezes today's forecast for grading) |
+| `GET /api/pricing?date=&days=` | Per product and day: SURGE / SALE / HOLD, price, expected units, prep quantity, reason (code + English text) |
+| `GET /api/explain?date=` | % effect of each driver on one day |
+| `GET/POST /api/actuals`, `DELETE /api/actuals/{date}`, `POST /api/actuals/import`, `DELETE /api/actuals?source=` | Real daily sales (the learning signal); import from LivingDoc; clear by source (`demo`, `livingdoc`, `owner`) |
+| `GET/POST /api/factors`, `DELETE /api/factors/{id}`, `GET /api/factors/suggest?text=` | Owner factors and the AI's current belief about each |
+| `GET/POST /api/rival-promos`, `DELETE /api/rival-promos/{id}` | Rival promotions |
+| `GET /api/scorecard` | MAPE, bias, 80% coverage, skill vs last-7-day average, profit vs flat prices, plain-language verdicts |
+| `GET /api/trends`, `POST /api/trends/refresh` | Cached web-trend scores (never hits the network) / run the search now |
+| `GET/PUT /api/foresight/profile`, `PUT /api/foresight/products/{name}`, `GET/PUT /api/foresight/festivals`, `POST /api/foresight/festivals/reset` | Assumptions: location, income, rivals, guardrails, product prices/costs/elasticity, festival calendar |
+| `POST/DELETE /api/foresight/demo`, `GET /api/foresight/learned`, `POST /api/foresight/daily` | Demo mode (rows tagged `demo`), starting vs learned coefficients, run the daily job |
 | `GET /api/audit` | Check that every stock count equals the sum of its movement log |
+
+## Forecast & Pricing (Foresight)
+
+The **Forecast & Pricing** section (tabs: Forecast, Pricing, Owner inputs, Scorecard, Setup) wraps the Foresight demand and pricing
+engine, vendored in `backend/foresight/` (pure Python; its matplotlib charts are replaced by SVG drawn in the browser).
+
+**How our data feeds it**
+
+| LivingDoc | Foresight | Notes |
+|---|---|---|
+| `items` per branch | `profile["products"]` | `baseline_burn` becomes `base_units`; **current stock becomes `supply_per_day`** (capacity), so surge/sale/prep use real stock; shelf life ≤ 14 days marks a product perishable. Items with no daily use are listed as "not forecast", never silently dropped. |
+| *(nothing)* | price, cost, category, elasticity, essential, temp/rain sensitivity, keywords | LivingDoc has none of these, so each product gets **placeholder** defaults (flagged on screen until you edit them in Setup). Elasticity defaults to the margin-implied value (price ÷ (price − cost)), capped to 0.4–4, unless you override it. |
+| outflow `movements` + `cash_events` (collected) | `actuals` (orders, revenue) | LivingDoc has no order count, so orders are **estimated as outflow events per day** (a proxy). Imports are tagged `source=livingdoc`, never overwrite a day you logged, and can be cleared. Log the true number for any day to override. |
+| branch | one Foresight store per branch | `<db folder>/foresight_data/<branch>.db` |
+| `festivals` (supplier planning) | `festivals` (demand kernels) | Different shapes, so they stay **separate**. LivingDoc's calendar is shown read-only in Setup for reference. |
+
+**What the section guarantees**
+- Festival dates, pay schedules, weather normals, starting coefficients and placeholder prices are labelled as editable assumptions on every tab, with a reminder to verify festival dates for your region.
+- Live weather (Open-Meteo, no key) and the daily web search (DuckDuckGo via `ddgs`) fall back to clearly labelled assumed values when offline; the page says which one it is using.
+- Demo mode loads simulated sales tagged `demo`, shows a banner whenever any are present, refuses to overwrite days you logged, and clears in one click.
+- Essentials are never surged; the surge cap, sale floor and rival-price ceiling are editable.
+- The scorecard grades only forecasts frozen before the day; one day proves nothing, so it reports averages over many days.
+
+**Daily job.** `python scripts/refresh_daily.py` (run from `backend/`, see the file for cron / Task Scheduler / launchd examples) refreshes web trends, imports yesterday's numbers and freezes today's forecast for every branch. The server runs the same job itself once a day while its background workers are on.
+
+**Honest limits.** Capacity is today's stock (incoming deliveries are not modelled). Trend scoring is keyword-based and noisy: a nudge of at most 12%, not a driver. Until real days are logged the forecast runs on assumptions and its ranges are widened accordingly. Foresight's explanations are translated into Hindi/Gujarati by reason code; festival, product and driver names typed by you are shown as written.
 
 ## Connecting the scanner
 
@@ -183,12 +223,12 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 27 tests
-pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 9 checks
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 78 tests
+pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 16 checks
 ```
 
 The backend tests cover the engine, extraction and validation (including a fake LLM and garbage LLM output), stock math,
-FIFO debt settlement, scanner edge cases, branch sync convergence, and every API route (including 40 parallel scanner requests
+FIFO debt settlement, scanner edge cases, branch sync convergence, every API route including the Forecast & Pricing routes and Foresight's own 24 model/pricing/learning tests (including 40 parallel scanner requests
 leaving the stock exactly consistent). The browser test drives the real UI: submits a note, scans, switches language, edits
 the festival calendar, checks that markup in a note is shown as text rather than executed, and checks for no horizontal
 scrolling on a phone-sized screen.
@@ -205,13 +245,17 @@ backend/
     database.py      SQLite schema and connection helpers
     engine.py        festive prediction engine
     i18n.py          server-side translations (EN/HI/GU)
-    workers.py       background loop (scanner inbox + hourly sync)
-    services/        extraction · inventory · ledger · scanner · sync · document · catalog · seed
+    forecast_api.py  Forecast & Pricing routes
+    workers.py       background loop (scanner inbox, hourly sync, daily forecast job)
+    services/        extraction · inventory · ledger · scanner · sync · document · catalog · forecasting · seed
+  foresight/         vendored demand & pricing engine (model, pricing, owner learning, scorecard, trends, weather)
   tests/             pytest suite
 frontend/
   index.html  config.js  css/
   js/                main.js · api.js · store.js · i18n.js · format.js · dom.js · toast.js
-  js/components/     header · notes · scanner · inventory · cash · promises · forecast · risks · settings
+  js/components/     header · notes · scanner · inventory · cash · promises · forecast · foresight · risks · settings
+  js/charts.js       SVG charts for the forecast and scorecard
+scripts/             refresh_daily.py (once-a-day Forecast & Pricing job)
 e2e/                 browser smoke test (Playwright)
 examples/            sample scanner files and notes
 ```

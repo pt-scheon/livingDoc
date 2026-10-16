@@ -3,7 +3,7 @@ import logging
 import threading
 
 from .config import settings
-from .services import scanner, sync
+from .services import forecasting, scanner, sync
 
 log = logging.getLogger("livingdoc.workers")
 
@@ -30,6 +30,7 @@ class Workers:
             try:
                 scanner.process_scanner_inbox(settings.default_branch)
                 sync.sync_if_due()
+                forecasting.daily_if_due()
             except Exception:  # a failing tick must never kill the loop
                 log.exception("worker tick failed")
             self._stop.wait(max(1, settings.scanner_poll_seconds))
