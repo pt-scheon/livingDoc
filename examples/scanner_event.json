@@ -1,0 +1,4 @@
+[
+  {"event_id": "scan-0001", "sku": "ITM-GHEE", "qty": 3, "direction": "out", "branch": "Main Store"},
+  {"event_id": "scan-0002", "sku": "ITM-GIFTBOX", "qty": 20, "direction": "in", "branch": "Main Store"}
+]

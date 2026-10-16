@@ -1,0 +1,3 @@
+event_id,sku,item,qty,direction,branch
+scan-0003,ITM-MILK,,6,in,Main Store
+scan-0004,,Paper Cups,40,out,Main Store
