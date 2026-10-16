@@ -250,7 +250,7 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 
 ```bash
 cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 104 tests
-pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 29 checks
+pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 26 checks
 ```
 
 The backend tests cover the engine, extraction and validation (including a fake LLM and garbage LLM output), stock math,
