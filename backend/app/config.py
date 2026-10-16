@@ -3,6 +3,12 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
 
 def _env(name, default):
     return os.environ.get(name, default)
@@ -13,9 +19,9 @@ class Settings:
     db_path: str = field(default_factory=lambda: _env("LIVINGDOC_DB", "livingdoc.db"))
     hub_path: str = field(default_factory=lambda: _env("LIVINGDOC_HUB", "livingdoc_hub.db"))  # shared by all branches
     scanner_inbox: str = field(default_factory=lambda: _env("LIVINGDOC_SCANNER_INBOX", "scanner_inbox"))
-    llm_base_url: str = field(default_factory=lambda: _env("LLM_BASE_URL", "http://localhost:11434/v1"))
-    llm_api_key: str = field(default_factory=lambda: _env("LLM_API_KEY", "ollama"))
-    llm_model: str = field(default_factory=lambda: _env("LLM_MODEL", "llama3.1"))
+    llm_base_url: str = field(default_factory=lambda: _env("LLM_BASE_URL", "https://api.groq.com/openai/v1"))
+    llm_api_key: str = field(default_factory=lambda: _env("LLM_API_KEY", ""))
+    llm_model: str = field(default_factory=lambda: _env("LLM_MODEL", "openai/gpt-oss-20b"))
     llm_timeout: float = field(default_factory=lambda: float(_env("LLM_TIMEOUT", "45")))
     sync_interval_seconds: int = field(default_factory=lambda: int(_env("LIVINGDOC_SYNC_SECONDS", "3600")))
     scanner_poll_seconds: int = field(default_factory=lambda: int(_env("LIVINGDOC_SCANNER_POLL_SECONDS", "10")))
