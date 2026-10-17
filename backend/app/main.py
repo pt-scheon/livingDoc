@@ -11,6 +11,7 @@ from . import auth, security
 from .api import router
 from .forecast_api import router as forecast_router
 from .trust_api import router as trust_router
+from .feedback_api import router as feedback_router
 from .presence_api import router as presence_router
 from .config import settings
 from .services import demo_storefront
@@ -43,6 +44,7 @@ def create_app(serve_frontend: bool = True) -> FastAPI:
     app.include_router(forecast_router)
     app.include_router(trust_router)
     app.include_router(presence_router)
+    app.include_router(feedback_router)
     if serve_frontend and FRONTEND_DIR.is_dir():
         app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
     return app

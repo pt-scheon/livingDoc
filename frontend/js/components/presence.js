@@ -5,7 +5,7 @@ import { t, LANGS } from "../i18n.js";
 import { money, shortDate } from "../format.js";
 import { toast } from "../toast.js";
 
-const TABS = ["page", "helper", "log"];
+const TABS = ["page", "helper", "feedback", "log"];
 
 export function createPresence() {
   const heading = h("h2", { id: "pr-h" });
@@ -40,7 +40,7 @@ export function createPresence() {
     replace(tabBar, TABS.map((id) => h("button", { type: "button", role: "tab", id: `pr-tab-${id}`, "aria-pressed": String(S.tab === id), "aria-selected": String(S.tab === id),
       onclick: () => { if (S.tab !== id) show(id); } }, L(`pr_tab_${id}`))));
   }
-  const build = (tab) => (tab === "page" ? buildPage() : tab === "helper" ? buildHelper() : buildLog());
+  const build = (tab) => (tab === "page" ? buildPage() : tab === "helper" ? buildHelper() : tab === "feedback" ? buildFeedback() : buildLog());
 
   // ------------------------------------------------------------- page
   async function buildPage() {
@@ -112,6 +112,31 @@ export function createPresence() {
       ta, h("details", {}, h("summary", {}, L("pr_why")), h("ul", {},
         h("li", {}, `${L("pr_why_source")}: ${w.source || ""}`), (w.uses?.length ? h("li", {}, `${L("pr_why_uses")}: ${w.uses.join(", ")}`) : null), h("li", {}, `${L("pr_why_invented")}: ${w.invented || ""}`))),
       h("div", { class: "row" }, acts), boost);
+  }
+
+  // ------------------------------------------------------------- feedback
+  async function buildFeedback() {
+    const [mine, cust] = await Promise.all([api.fbList(S.branch, "owner"), api.fbList(S.branch, "customer")]);
+    const cat = h("select", { id: "fb-category" }, ["idea", "bug", "confusing", "praise"].map((c) => h("option", { value: c }, L(`fb_c_${c}`))));
+    const text = h("textarea", { id: "fb-text", rows: 3, maxLength: 600 });
+    const send = btn(L("fb_send"), async () => {
+      if (await act(() => api.fbSuggest(S.branch, { text: text.value, category: cat.value, lang: S.lang, screen: "found" }), L("fb_sent"))) show("feedback");
+    }, "primary"); send.id = "fb-send";
+    const chipOf = (st) => h("span", { class: `chip ${st === "done" ? "ok" : st === "dismissed" ? "out" : "info"}` }, L(`fb_s_${st}`));
+    const myRows = mine.items.map((r) => h("article", { class: "card fb-item", "data-id": r.id },
+      h("div", {}, h("b", {}, L(`fb_c_${r.category}`)), " ", chipOf(r.status), " ", h("span", { class: "muted" }, shortDate(r.created_at, S.lang))),
+      h("p", {}, r.text), r.dev_note ? h("p", { class: "muted" }, `${L("fb_dev_note")}: ${r.dev_note}`) : null));
+    const sm = cust.summary;
+    const custRows = cust.items.map((r) => h("article", { class: "card fb-cust", "data-id": r.id },
+      h("div", {}, r.rating ? h("b", { "aria-label": `${r.rating}/5` }, "★".repeat(r.rating) + "☆".repeat(5 - r.rating)) : null, " ", h("span", { class: "muted" }, `${r.name || L("fb_anon")} · ${shortDate(r.created_at, S.lang)}`),
+        r.status === "new" ? [" ", h("span", { class: "chip info" }, L("fb_s_new"))] : null),
+      r.text ? h("p", {}, r.text) : null, r.contact ? h("p", { class: "muted" }, `${L("fb_contact")}: ${r.contact}`) : null,
+      r.status === "new" ? btn(L("fb_seen"), async () => { if (await act(() => api.fbStatus(S.branch, r.id, { status: "seen" }))) show("feedback"); }, "small ghost") : null));
+    return [block(L("fb_suggest_h"), h("p", { class: "muted" }, L("fb_suggest_intro")), fld(L("fb_category"), cat), fld(L("fb_text"), text), h("div", { class: "row" }, send)),
+      block(L("fb_mine"), myRows.length ? myRows : h("p", { class: "muted" }, L("fb_none"))),
+      block(L("fb_cust_h"), h("p", { class: "muted" }, L("fb_cust_intro")),
+        sm.average_rating ? h("p", { id: "fb-avg" }, h("b", {}, `${L("fb_avg")}: ${sm.average_rating} / 5`), " ", h("span", { class: "muted" }, L("fb_of", { n: sm.rated }))) : null,
+        custRows.length ? custRows : h("p", { class: "muted" }, L("fb_cust_none")))];
   }
 
   // ------------------------------------------------------------- log

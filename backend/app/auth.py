@@ -32,6 +32,7 @@ PUBLIC = [
     ("GET", re.compile(r"^/api/auth/status$")),
     ("POST", re.compile(r"^/api/auth/(login|logout)$")),
     ("GET", re.compile(r"^/api/presence/public/[^/]+$")),
+    ("POST", re.compile(r"^/api/presence/public/[^/]+/feedback$")),   # a customer comment; honeypot + rate limit inside
     ("POST", re.compile(r"^/api/proofs/(verify|check-openings)$")),
     ("POST", re.compile(r"^/api/proofs/[^/]+/open$")),            # gated by the proof's one-time open key
     ("GET", re.compile(r"^/api/proofs/[0-9a-f]+$")),               # a proof packet is meant to be shared

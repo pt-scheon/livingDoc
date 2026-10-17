@@ -105,6 +105,10 @@ export const api = {
   prDecide: (branch, id, action) => request("POST", `/api/presence/drafts/${id}/${action}`, { query: { branch } }),
   prBoost: (branch, id, amount) => request("POST", `/api/presence/drafts/${id}/boost`, { query: { branch }, body: { amount } }),
   prLog: (branch) => request("GET", "/api/presence/log", { query: { branch } }),
+  fbList: (branch, source) => request("GET", "/api/feedback", { query: { branch, source } }),
+  fbSuggest: (branch, body) => request("POST", "/api/feedback", { query: { branch }, body }),
+  fbStatus: (branch, id, body) => request("PATCH", `/api/feedback/${id}`, { query: { branch }, body }),
+  fbPublicSend: (slug, body) => request("POST", `/api/presence/public/${encodeURIComponent(slug)}/feedback`, { body }),
   prPublic: (slug) => request("GET", `/api/presence/public/${encodeURIComponent(slug)}`),
   resolveRisk: (id) => request("POST", `/api/risks/${id}/resolve`),
 };

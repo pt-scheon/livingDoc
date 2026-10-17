@@ -1,4 +1,4 @@
-.PHONY: install dev run test e2e docker
+.PHONY: install dev run test e2e docker notes
 
 install:
 	pip install -r backend/requirements.txt
@@ -17,3 +17,6 @@ e2e:
 
 docker:
 	docker compose up -d --build
+
+notes:
+	python scripts/export_feedback.py

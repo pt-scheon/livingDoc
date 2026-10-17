@@ -66,6 +66,11 @@ CREATE TABLE IF NOT EXISTS presence_drafts(
     created_on TEXT NOT NULL, published_on TEXT, spend REAL NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS presence_log(
     id INTEGER PRIMARY KEY AUTOINCREMENT, branch TEXT NOT NULL, at TEXT NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS feedback(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, branch TEXT NOT NULL, source TEXT NOT NULL CHECK(source IN ('owner','customer')),
+    category TEXT NOT NULL DEFAULT 'idea', rating INTEGER, text TEXT NOT NULL, name TEXT NOT NULL DEFAULT '', contact TEXT NOT NULL DEFAULT '',
+    lang TEXT NOT NULL DEFAULT 'en', screen TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new','seen','planned','done','dismissed')), dev_note TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
 """
 

@@ -286,7 +286,7 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 129 tests
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 134 tests
 pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 42 checks
 ```
 

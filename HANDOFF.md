@@ -1,11 +1,13 @@
 # Handoff for a coding agent (Antigravity or similar)
 
+> Gemini and other agents: start with `GEMINI.md` and `notes/README.md` (changelog, architecture, owner feedback).
+
 Goal: review this finished project, commit it to a Git remote, and deploy it. Do not rewrite features.
 
 ## State of the repo
 - Complete, tested product: FastAPI + SQLite backend, vanilla-JS frontend, EN/HI/GU. `git log` already holds the history. The working tree should be clean; if it is not, commit the changes as one commit.
-- Backend tests: `cd backend && pip install -r requirements-dev.txt && python -m app.engine && python -m pytest -q tests` (127 tests expected).
-- Browser test: `pip install playwright && playwright install chromium && python e2e/browser_smoke.py` (42 checks, starts its own servers on ports 8799 and 8800).
+- Backend tests: `cd backend && pip install -r requirements-dev.txt && python -m app.engine && python -m pytest -q tests` (134 tests expected).
+- Browser test: `pip install playwright && playwright install chromium && python e2e/browser_smoke.py` (46 checks, starts its own servers on ports 8799 and 8800).
 - Container: `Dockerfile`, `docker-compose.yml`, `render.yaml`, `fly.toml`, `.env.example`. CI in `.github/workflows/ci.yml` runs tests, the browser test and a Docker smoke test.
 
 ## Do this, in order
