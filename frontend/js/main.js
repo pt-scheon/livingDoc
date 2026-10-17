@@ -18,6 +18,7 @@ import { createTrust } from "./components/trust.js";
 import { createPresence } from "./components/presence.js";
 import { createRisks } from "./components/risks.js";
 import { createSettings } from "./components/settings.js";
+import { createAccount } from "./components/account.js";
 
 const POLL_MS = 10000;
 let inflight = null;
@@ -95,6 +96,8 @@ const actions = {
   },
   async signOut() { try { await api.logout(); } catch { /* cookie may already be gone */ } location.reload(); },
   openSettings: () => settings.open(),
+  openAccount: () => account.open(),
+  createAccount: () => signIn({ mode: "up", onCancel: () => location.reload() }),
 };
 
 // ---------- build the page ----------
@@ -104,6 +107,7 @@ const hero = createHero(actions);
 const notes = createNotes(actions);
 const scanner = createScanner(actions);
 const settings = createSettings(actions);
+const account = createAccount(actions);
 const inventory = createInventory(actions);
 const cash = createCash();
 const promises = createPromises(actions);
@@ -128,11 +132,11 @@ const doc = h("main", { class: "main", id: "doc", tabindex: "-1" }, header.el, s
 const app = document.getElementById("app");
 function mount() {
   app.className = "app";
-  app.replaceChildren(nav.el, doc, settings.el);
+  app.replaceChildren(nav.el, doc, settings.el, account.el);
   app.removeAttribute("aria-busy");
 }
 
-const parts = [header, nav, hero, notes, scanner, inventory, cash, promises, forecast, foresight, trust, presence, risks, settings];
+const parts = [header, nav, hero, notes, scanner, inventory, cash, promises, forecast, foresight, trust, presence, risks, settings, account];
 subscribe((s) => {
   if (!app.contains(doc)) return;
   parts.forEach((p) => p.update(s));
@@ -159,9 +163,11 @@ async function start() {
   }
 }
 
-function signIn() {
+async function signIn(opts = {}) {
   const lang = prefs.get("lang", "en");
-  showLogin(app, lang, () => location.reload(), (c) => { prefs.set("lang", c); signIn(); });
+  let st = getState().auth;
+  try { st = await api.authStatus(); setState({ auth: st }); } catch { /* use what we know */ }
+  showLogin(app, lang, st, () => location.reload(), (c) => { prefs.set("lang", c); signIn(opts); }, opts);
   app.className = ""; app.removeAttribute("aria-busy");
 }
 window.addEventListener("ld:unauth", () => { if (app.contains(doc)) signIn(); });

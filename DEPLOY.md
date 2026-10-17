@@ -49,11 +49,11 @@ shop.example.com {
 - Scanners and scripts: `curl -H "Authorization: Bearer $LIVINGDOC_ADMIN_PASSWORD" -d '{"events":[…]}' https://<host>/api/scanner/events`.
 - Optional AI for Hindi/Gujarati notes: set `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (any OpenAI-compatible service).
 - Backups: copy `/data/livingdoc.db` (use `sqlite3 livingdoc.db ".backup out.db"` while running). The proof-signing key lives in that file, so guard backups like a password.
-- Changing the password signs everyone out.
+- `LIVINGDOC_ADMIN_PASSWORD` is the setup code for the first account. Changing it signs out anyone who used the deployment password. People with accounts change their own password under Account.
 
 ## Limits to know
 
-- One shared owner password, no per-user accounts or roles.
+- Accounts have two roles (owner, staff). No e-mail verification or password-reset e-mail: an owner can remove a person and invite them again, or you reset from the hosting shell. Sessions last 7 days.
 - SQLite on one container: fine for a shop or a few branches, not a large chain. Run a single instance.
 - The login rate limit is kept in memory, so it resets when the container restarts.
 
@@ -62,3 +62,9 @@ shop.example.com {
 With `LIVINGDOC_DEMO_STOREFRONT=1` (set in the Dockerfile and render.yaml) the app creates a sample published storefront on first start and exposes `/shop.html?s=main-store`, `/docs` and `/api/forecast/chart.png` without a password. Everything else still needs the password. Remove the variable for a real shop.
 
 Render: `render.yaml` now uses the **free** plan with no disk. Free instances sleep when idle and reset data on restart; sample data and the storefront are rebuilt automatically.
+
+## Signing up (first run)
+1. Deploy with `LIVINGDOC_ADMIN_PASSWORD` set to a long passphrase. Do this on any public host: until the first account exists, whoever reaches the sign-up page first would become the owner, and this setup code is what stops a stranger.
+2. Open the site, choose **Create account**, fill in your name, e-mail and a password (8+ characters), and type the deployment password as the **setup code**. You are now the owner.
+3. To add staff: **Account, Invite someone**. Send them the code once; it works one time within 7 days. They choose **Create account** and enter it.
+4. Passwords are stored only as salted scrypt hashes. Five wrong tries from one place pause sign-in for a minute.

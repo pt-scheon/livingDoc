@@ -34,7 +34,8 @@ export function createNav(actions) {
   const title = h("h1"), sub = h("small");
   const nav = h("nav", { class: "nav", id: "main-nav" });
   const signout = h("button", { class: "btn small", type: "button", id: "signout", onclick: () => actions.signOut() });
-  const foot = h("div", { class: "side-foot" }, signout);
+  const acct = h("button", { class: "btn small", type: "button", id: "account-btn" });
+  const foot = h("div", { class: "side-foot" }, acct, signout);
   const el = h("aside", { class: "side" }, h("div", { class: "brand" }, brandMark(), h("div", {}, title, sub)), nav, foot);
   let key = "";
   return {
@@ -49,7 +50,11 @@ export function createNav(actions) {
       nav.setAttribute("aria-label", L("view_nav"));
       replace(nav, VIEWS.map((v) => h("a", { href: `#/${v}`, "data-view": v, "aria-current": s.view === v ? "page" : null },
         svg(ICONS[v]), h("span", { class: "l" }, L(`nav_${v}`)), v === "overview" && risks ? h("span", { class: "badge-n", "aria-label": String(risks) }, risks) : null)));
-      signout.textContent = L("signout"); foot.hidden = !s.auth.required;
+      signout.textContent = L("signout"); signout.hidden = !s.auth.required;
+      const me = s.auth.user;
+      acct.textContent = me ? "👤 " + (me.name || L("au_account")) : "🔒 " + L("au_create_cta");
+      acct.onclick = () => (me ? actions.openAccount() : actions.createAccount());
+      acct.hidden = !!(s.auth.required && !me);      // the deployment-password session has no account to manage
     },
   };
 }

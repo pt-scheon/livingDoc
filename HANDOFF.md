@@ -6,8 +6,8 @@ Goal: review this finished project, commit it to a Git remote, and deploy it. Do
 
 ## State of the repo
 - Complete, tested product: FastAPI + SQLite backend, vanilla-JS frontend, EN/HI/GU. `git log` already holds the history. The working tree should be clean; if it is not, commit the changes as one commit.
-- Backend tests: `cd backend && pip install -r requirements-dev.txt && python -m app.engine && python -m pytest -q tests` (134 tests expected).
-- Browser test: `pip install playwright && playwright install chromium && python e2e/browser_smoke.py` (46 checks, starts its own servers on ports 8799 and 8800).
+- Backend tests: `cd backend && pip install -r requirements-dev.txt && python -m app.engine && python -m pytest -q tests` (146 tests expected).
+- Browser test: `pip install playwright && playwright install chromium && python e2e/browser_smoke.py` (53 checks, starts its own servers on ports 8799 and 8800).
 - Container: `Dockerfile`, `docker-compose.yml`, `render.yaml`, `fly.toml`, `.env.example`. CI in `.github/workflows/ci.yml` runs tests, the browser test and a Docker smoke test.
 
 ## Do this, in order
@@ -19,7 +19,7 @@ Goal: review this finished project, commit it to a Git remote, and deploy it. Do
    git push -u origin main
    ```
 3. Never commit: `.env`, `*.db`, `*.db-wal`, `scanner_inbox/`. `.gitignore` already excludes them; check `git status` before every commit.
-4. Deploy with `DEPLOY.md` (Render blueprint is the shortest path). `LIVINGDOC_ADMIN_PASSWORD` is **required**: ask the owner for it or generate a long random one and give it to them once. Never write it into a file in the repo.
+4. Deploy with `DEPLOY.md` (Render blueprint is the shortest path). `LIVINGDOC_ADMIN_PASSWORD` is **required** on any public host: it is the setup code for the first account. Ask the owner for it or generate a long random one and give it to them once. Never write it into a file in the repo. Then the owner opens the site, chooses Create account and types it as the setup code.
 5. After deploy, verify: `/api/health` returns `{"status":"ok"}`; `/api/document` returns 401 without a session; the site loads and sign-in works; `/shop.html?s=main-store` shows "not available" until the owner publishes it.
 
 ## Rules the code depends on (keep them)
@@ -29,7 +29,7 @@ Goal: review this finished project, commit it to a Git remote, and deploy it. Do
 - Forecast and pricing numbers that rest on guesses are labelled as assumptions in the UI.
 
 ## Known limits (do not hide them in docs)
-- One shared owner password, no per-user accounts. The proof is a signed, spot-checkable attestation, not zero-knowledge. No ad platform is connected. SQLite means one instance and a persistent volume.
+- Accounts (owner/staff) with invite codes; no e-mail verification or reset e-mail. The proof is a signed, spot-checkable attestation, not zero-knowledge. No ad platform is connected. SQLite means one instance and a persistent volume.
 
 ## Suggested commit message if one is needed
 `Polish: new interface, owner login, container and hosting config`

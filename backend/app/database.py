@@ -71,6 +71,12 @@ CREATE TABLE IF NOT EXISTS feedback(
     category TEXT NOT NULL DEFAULT 'idea', rating INTEGER, text TEXT NOT NULL, name TEXT NOT NULL DEFAULT '', contact TEXT NOT NULL DEFAULT '',
     lang TEXT NOT NULL DEFAULT 'en', screen TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new','seen','planned','done','dismissed')), dev_note TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS users(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('owner','staff')),
+    pw_hash TEXT NOT NULL, created_at TEXT NOT NULL, last_login TEXT);
+CREATE TABLE IF NOT EXISTS invites(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, code_hash TEXT NOT NULL UNIQUE, role TEXT NOT NULL CHECK(role IN ('owner','staff')), created_by INTEGER,
+    created_at TEXT NOT NULL, expires_at REAL NOT NULL, used_by INTEGER, hint TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
 """
 

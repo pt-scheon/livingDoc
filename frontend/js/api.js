@@ -35,7 +35,13 @@ async function request(method, path, { query, body, timeout = 30000 } = {}) {
 
 export const api = {
   authStatus: () => request("GET", "/api/auth/status"),
-  login: (password) => request("POST", "/api/auth/login", { body: { password } }),
+  login: (email, password) => request("POST", "/api/auth/login", { body: { email, password } }),
+  signup: (body) => request("POST", "/api/auth/signup", { body }),
+  changePassword: (current, next) => request("POST", "/api/auth/password", { body: { current, new: next } }),
+  authUsers: () => request("GET", "/api/auth/users"),
+  removeUser: (id) => request("DELETE", `/api/auth/users/${id}`),
+  makeInvite: (role) => request("POST", "/api/auth/invites", { body: { role } }),
+  revokeInvite: (id) => request("DELETE", `/api/auth/invites/${id}`),
   logout: () => request("POST", "/api/auth/logout", { body: {} }),
   config: () => request("GET", "/api/config"),
   branches: () => request("GET", "/api/branches"),

@@ -107,7 +107,7 @@ Without an LLM, the simple reader understands English only.
 | `LIVINGDOC_SYNC_SECONDS` | `3600` | Branch sync interval |
 | `LIVINGDOC_LEAD_DAYS` | `3` | Default supplier lead time (editable in Settings) |
 | `LIVINGDOC_WORKERS` | `1` | `0` disables the background loop |
-| `LIVINGDOC_ADMIN_PASSWORD` | *(empty = open)* | **Set this before hosting on the internet.** Turns on the owner sign-in (see [Hosting](#hosting-it-on-the-internet)) |
+| `LIVINGDOC_ADMIN_PASSWORD` | *(empty = open)* | **Set this before hosting on the internet.** It is the setup code for creating the first (owner) account (see [Hosting](#hosting-it-on-the-internet)) |
 | `LIVINGDOC_CSP` | `1` | `0` turns off the Content-Security-Policy header |
 | `LIVINGDOC_CORS_ORIGINS` | `*` | Allowed origins when the frontend is hosted elsewhere |
 | `LIVINGDOC_FRONTEND` | `../frontend` | Folder served at `/` |
@@ -286,7 +286,7 @@ For that input the engine reports a festive burn of 5.6/day, 5.3 days of stock i
 ## Tests
 
 ```bash
-cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 134 tests
+cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests     # 146 tests
 pip install playwright && playwright install chromium && python ../e2e/browser_smoke.py   # real browser, 42 checks
 ```
 
@@ -374,7 +374,7 @@ Building an autonomous operations brain for micro-businesses revealed real-world
 
 ## Limitations (please read before using it for a real shop)
 
-- **One shared owner password.** With `LIVINGDOC_ADMIN_PASSWORD` set, one password protects every owner screen and API route (7-day signed session cookie, wrong passwords rate-limited). There are no per-user accounts or roles. Without it the app is open: use that only on `127.0.0.1` or a trusted network.
+- **Accounts, not a shared password.** People sign up with name, e-mail and password (salted scrypt hashes, 7-day signed session cookie, wrong tries rate-limited). The first account is the owner; on a public host it must present `LIVINGDOC_ADMIN_PASSWORD` as the setup code. Staff join with single-use invite codes from an owner. Not built: e-mail verification and reset e-mails (they need an e-mail service). Without any account and password the app is open: use that only on `127.0.0.1` or a trusted network.
 - **Branch sync** covers stock movements only; cash and promises stay per branch. The "hub" is a SQLite file on a shared path, which suits a few branches, not a large chain.
 - **Cash tracking vs the trust ledger.** The cash section's "owed" means a customer owes the business; money the business owes (and favours, and words) lives in the Trust ledger.
 - **Voice input** relies on the browser's speech recognition; support for Hindi and Gujarati varies by browser, and it has not been tested here.

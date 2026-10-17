@@ -15,7 +15,7 @@ Read this first, then `notes/README.md`. These files are the shared memory betwe
 ## Run and test (do this before and after any change)
 ```bash
 cd backend && pip install -r requirements-dev.txt
-python -m app.engine && python -m pytest -q tests       # 134 tests expected
+python -m app.engine && python -m pytest -q tests       # 146 tests expected
 uvicorn app.main:app --port 8000                          # app at http://localhost:8000
 pip install playwright && playwright install chromium && python e2e/browser_smoke.py   # browser checks
 ```
@@ -24,9 +24,10 @@ pip install playwright && playwright install chromium && python e2e/browser_smok
 1. User text goes into the page as **text nodes only** (`h()` in `frontend/js/dom.js`). Never `innerHTML` with data.
 2. **Private by default.** Ledger entries and public-page fields count only when the owner opts in. Proofs carry bands, never names or amounts.
 3. The AI helper **only drafts**. It never publishes, edits the profile or spends.
-4. Customer comments, names and contacts are visible **only to the owner**. They never reach the public page or `notes/FEEDBACK.md`.
-5. Numbers resting on guesses are labelled as assumptions in the UI.
-6. Never commit `.env`, `*.db`, passwords or `scanner_inbox/`.
+4. Passwords are only ever stored as scrypt hashes (`services/accounts.py`). Never log or return them. Roles: `owner` manages people, `staff` cannot.
+5. Customer comments, names and contacts are visible **only to the owner**. They never reach the public page or `notes/FEEDBACK.md`.
+6. Numbers resting on guesses are labelled as assumptions in the UI.
+7. Never commit `.env`, `*.db`, passwords or `scanner_inbox/`.
 
 ## How to record your work (so the next agent can see it)
 - After every change add an entry **at the top** of `notes/CHANGELOG.md`: date, what changed, files touched, tests run, anything left undone.

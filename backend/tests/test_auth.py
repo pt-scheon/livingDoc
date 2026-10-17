@@ -15,12 +15,14 @@ def locked(client, monkeypatch):
 
 
 def test_open_mode_when_no_password(client):
-    assert client.get("/api/auth/status").json() == {"required": False, "authed": True}
+    st = client.get("/api/auth/status").json()
+    assert st["required"] is False and st["authed"] is True and st["setup"] is True and st["user"] is None
     assert client.get("/api/document", params=B).status_code == 200
 
 
 def test_private_routes_need_login_when_password_is_set(locked):
-    assert locked.get("/api/auth/status").json() == {"required": True, "authed": False}
+    st = locked.get("/api/auth/status").json()
+    assert st["required"] is True and st["authed"] is False and st["needs_setup_code"] is True
     for path in ("/api/document", "/api/trust/ledger", "/api/presence", "/api/items", "/api/branches", "/api/config"):
         assert locked.get(path, params=B).status_code == 401, path
     assert locked.post("/api/notes", json={"branch": "Main Store", "text": "sold 1 milk"}).status_code == 401
