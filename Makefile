@@ -1,4 +1,4 @@
-.PHONY: install dev run test e2e docker notes
+.PHONY: install dev run test e2e docker notes pack
 
 install:
 	pip install -r backend/requirements.txt
@@ -20,3 +20,6 @@ docker:
 
 notes:
 	python scripts/export_feedback.py
+
+pack:
+	python scripts/pack_frontend.py

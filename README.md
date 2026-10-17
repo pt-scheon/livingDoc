@@ -1,15 +1,158 @@
 # LivingDoc: The Self-Updating Business Brain
 
-> 🌐 **Live Demo:** [https://wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com)  
-> 🔑 **Owner Password:** `admin`
+> A small shop runs on memory, favours and one person's long days. LivingDoc turns the owner's messy notes and the scanner's stock events into a live business page, keeps the shop's promises honest on both sides, forecasts demand without pretending to be certain, and lets the shop be found and trusted without handing itself over to a tool it cannot see inside.
+
+**Jump to:** [Problem and users](#problem-and-intended-users) · [How each riddle shaped it](#how-each-riddle-shaped-the-project) · [Risks and limitations](#risks-and-limitations) · [Setup / run](#setup--run-instructions) · [Frontend Pack](#frontend-pack) · [Live links](#-live-working-links--api-endpoints) · [Notes for coding agents](GEMINI.md)
 
 ---
 
+## Problem and intended users
+
+**The problem.** From outside, a small business looks simple: someone sells something to someone. Inside, it runs on memory, favours, instinct and one person's long days. That person is the buyer, cashier, accountant and cleaner at once, so almost nothing is written down. What breaks first is whatever nobody tracks: a stock count that drifted, a promise that was never recorded, a debt open for two weeks, a supplier closing for the festival exactly when demand peaks. Big-company software does not fit: it needs data entry the owner has no time for, in a language and a vocabulary that is not theirs.
+
+**Intended users**
+
+| Who | What they need from LivingDoc |
+|---|---|
+| **The owner** of a shop, cafe or workshop (1 to a few branches), often more comfortable in Hindi or Gujarati than English | Talk or type the day the way they think; see stock, cash and promises on one page; be warned *before* something runs out or goes overdue |
+| **Staff** the owner trusts | Use the app daily, without being able to invite, remove or see account management |
+| **The owner's counterparties**: a customer who owes money, a supplier owed money, a friend who promised a favour | A private link to see exactly what is recorded about *them*, dispute it, or veto its use |
+| **Customers and neighbours** | A public shop page that shows only what the owner chose to publish, a checkable trust badge, and a way to leave a rating and comment |
+| **A bank or supplier** deciding whether to trust the shop | A signed proof of a few band-level facts that they can verify themselves, with no names or amounts exposed |
+| **The developer** improving the product | Suggestions sent from inside the app (owner to developer), exported to `notes/FEEDBACK.md` |
+
+**Not for:** large chains, regulated accounting or tax filing, or anyone who needs audited figures. See [Risks and limitations](#risks-and-limitations).
+
+---
+
+## How each riddle shaped the project
+
+The project grew by answering four riddles in turn. Each one changed what was built and, just as much, what was deliberately left out.
+
+### 1. "What does a small business run on, and what quietly breaks first?"
+*It runs on memory, favours and one person's long days. What breaks first is what nobody writes down.*
+- **Shaped:** the owner never fills in forms. They write or speak a ramble ("sold 4 coffees, Dave paid 500, remind me to order beans") and the page updates itself, in English, Hindi or Gujarati.
+- **Design rule that came out of it:** *the AI never rewrites the document.* The model only extracts events as JSON; validated plain code does every addition and subtraction in SQLite, so the numbers stay auditable and the app still works with no AI at all (a rule reader takes over).
+- **Where it shows:** notes to page, scanner feed, quiet-breakage warnings (out of stock, runs out before delivery, overdue debt, one customer holding most of the unpaid money, stale promises, silent scanner), and the festival engine that adds supplier blackout days to lead time.
+
+### 2. "Which bets can a small business not take back?"
+*Ordering stock and setting prices are bets made under uncertainty, with nobody to tell the owner how wrong they might be.*
+- **Shaped:** the Forecast & Pricing module (Foresight). Every forecast is a range (50% and 80%), not a number; assumptions are labelled as assumptions; owner knowledge the data cannot see ("wedding nearby") is a factor that is pulled toward reality as real days are logged.
+- **Design rule:** *grade the decision, not the outcome.* A scorecard grades only forecasts frozen before the day, on calibration, skill against a naive baseline, and counterfactual value of the price plan. Prep quantities are capped by real stock so the plan cannot promise what the shelf cannot deliver.
+
+### 3. "A business is held together by promises. How do you keep them honest without exposing anyone?"
+*Money owed, money we owe, favours, someone's word: every promise has two sides, and each side remembers it differently.*
+- **Shaped:** the Trust ledger. Each promise keeps *both* figures; each person gets a private link to see, dispute and veto what is recorded about them; entries are private by default and count only if the owner opts in and the other person has not vetoed.
+- **Proof without exposure:** the shop can sign a few band-level claims ("owed at least ₹5,000, by at least 2 people, nothing over N days late"). A verifier checks the signature and can spot-check by nonce. Names and amounts never leave. *(This is selective disclosure with a Merkle tree and an Ed25519 signature, not zero-knowledge; see limits.)*
+- **Promise to cash flow:** open money promises feed a seeded Monte Carlo forecast with a 10/50/90% range of when cash actually arrives, using each person's track record.
+
+### 4. "Machines can write, design and spend for you, but owners avoid tools they do not understand. What would it take to be found and trusted without handing yourself over?"
+*The tools are powerful; the people who need them are not using them, because they cannot see inside.*
+- **Shaped:** "Be found, stay in control". Nothing is public until the owner ticks it, field by field. The AI helper can **only draft**: it shows what each draft was built from, what it used and that it invented nothing, then waits. It cannot publish, edit the page or spend; the owner's budget cap covers *planned* spend only (no ad account is connected). Every action by the helper or the owner is in an activity log.
+- **Trust, not hype:** the page can carry the signed trust badge from riddle 3, which visitors can verify. Visitors can leave a rating and comment that only the owner reads.
+
+### What grew around the riddles
+- **Feedback loop (owner to developer, customer to owner):** a place inside the app to tell the developer what is broken or confusing, and for customers to tell the shop what they think. Customer comments never reach the public page or the developer notes.
+- **Accounts:** sign up, sign in, owner and staff roles, single-use invite codes, so a hosted copy is not a shared password.
+- **Notes for coding agents:** [`GEMINI.md`](GEMINI.md), [`AGENTS.md`](AGENTS.md) and [`notes/`](notes/) hold the rules, changelog, architecture and owner feedback so any agent can pick up the work.
+
+---
+
+## Setup / run instructions
+
+You need **Python 3.10+**. No Node.js, no database server, no build step.
+
+### Run it on your computer (2 minutes)
+```bash
+git clone https://github.com/pt-scheon/livingdoc.git
+cd livingdoc/backend
+python3 -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m uvicorn app.main:app --port 8000
+```
+Open **http://localhost:8000**. The first start creates `livingdoc.db` with starter data (a sweet shop and cafe with two branches, three weeks of stock history, people who owe money, open promises and a festival calendar). Interactive API docs: **http://localhost:8000/docs**. From the repo root, `make install`, `make run`, `make test` do the same.
+
+Run it with a **single worker** (the default): the scanner inbox and hourly sync run inside the app process.
+
+The app starts **open** (no sign-in) so you can try it on `localhost`. Click **Create an account to lock it** in the sidebar to make the first (owner) account.
+
+### Optional: an AI model for Hindi and Gujarati notes
+Without one, an English-only rule reader is used. Any OpenAI-compatible endpoint works (Groq by default, OpenAI, or a local [Ollama](https://ollama.com)). Copy `backend/.env.example` to `backend/.env` and set `LLM_API_KEY` (see [Configuration](#configuration-environment-variables)).
+
+### Put it on the internet
+1. **Always** set `LIVINGDOC_ADMIN_PASSWORD` to a long passphrase. It is the **setup code** for creating the first owner account, so a stranger cannot claim your app.
+2. Deploy with the files in the repo: `Dockerfile`, `docker-compose.yml`, `render.yaml` (free plan, no disk), `fly.toml`. Step by step in [`DEPLOY.md`](DEPLOY.md).
+3. Open the site, choose **Create account**, enter your details and the setup code. You are the owner. Invite staff under **Account**.
+
+### Run the tests
+```bash
+cd backend && pip install -r requirements-dev.txt
+python -m app.engine && python -m pytest -q tests          # 146 backend tests
+pip install playwright && playwright install chromium && python e2e/browser_smoke.py   # 53 browser checks
+```
+
+### Try it in two minutes
+1. In **Talk or type your day**, paste: `Sold 4 milks, used 2 coffee beans, Dave paid Rs 500 cash, reminded me to order beans` and press **Update my business page**.
+2. Open **Money**, then **Trust**: add a promise, copy a person's private link, and open it in a private window.
+3. Open **Be found**, fill in your shop, tick what to show, use the helper to draft, approve, publish, then open the public page.
+4. Open **Be found, then Feedback** to send a suggestion to the developer, then run `python scripts/export_feedback.py` to see it in `notes/FEEDBACK.md`.
+
+---
+
+## Frontend Pack
+
+The whole browser side is available as a standalone pack you can host on any static host:
+
+- **Download:** [`frontend-pack/livingdoc-frontend-pack.zip`](frontend-pack/livingdoc-frontend-pack.zip) (about 100 KB, rebuilt with `make pack`)
+- **Pack guide:** [`frontend-pack/README.md`](frontend-pack/README.md)
+- **Source:** [`frontend/`](frontend/) (owner app `index.html`, public shop `shop.html`, counterparty page `party.html`, English/Hindi/Gujarati strings)
+
+Point it at an API by editing one line in [`frontend/config.js`](frontend/config.js). See [Hosting the frontend separately](#hosting-the-frontend-separately) for the sign-in caveat.
+
+---
+
+## Risks and limitations
+
+Read this before using LivingDoc for a real shop. Each item says what could go wrong and what the project does about it.
+
+**Wrong numbers**
+- **The AI can misread a note.** Mitigation: it only emits JSON deltas, the JSON is shown beside every note, validated and applied by plain code, and stock can never go negative. It does not remove the risk: check the extracted JSON, especially for Hindi/Gujarati and mixed-language notes. The offline reader is English only.
+- **Forecasts rest on assumptions.** Starter festival dates, surge multipliers and payday effects are guesses until real days are logged. The UI labels assumptions as assumptions and shows ranges, but a range is not a guarantee. Do not place large, irreversible orders on a forecast alone.
+- **Cash-flow forecasts** use each person's past behaviour; a new customer has none. The ranges widen, they do not become correct.
+- **Starter data is made up** (the sweet shop, the people, the demo storefront "Shah Provision"). Clear it before real use. `LIVINGDOC_DEMO_STOREFRONT=1` publishes sample content and a public chart on purpose; **do not set it on a real shop**.
+
+**Privacy and trust**
+- **Cloud AI sees note text.** If you configure a hosted model (Groq, OpenAI), the text of your notes goes to that provider. Use a local model (Ollama) if that is not acceptable. Customer records are not sent as such, but a note can contain a name.
+- **Your data lives where you host it.** Locally it is one SQLite file on your machine. On Render or Fly it is on that host. On the free Render plan **data is wiped on every restart**; use a paid plan with a disk (see `DEPLOY.md`) for anything real. The database also holds the proof-signing key, so guard backups like a password.
+- **The trust proof is not zero-knowledge and is not audited.** It is a signed, spot-checkable statement by the shop about entries it and the other person allowed. Band-level claims can still hint at the order of magnitude. A dishonest owner can choose which entries to opt in; the other person's veto and the verifier's nonce spot-check limit this, they do not eliminate it.
+- **Customer comments** are visible only to the owner, but a customer may type personal data. Contact details are optional and never exported to the developer notes. There is no spam filter beyond a hidden field and a per-shop rate limit.
+- **The helper cannot spend**, but that is partly because no ad platform is connected. The budget cap is a *planned* spend ledger. If you connect real ad accounts later, re-audit this guarantee.
+
+**Access and security**
+- **Accounts have no e-mail verification and no password-reset e-mail** (that needs an e-mail service). A forgotten password means an owner removes the person and sends a new invite; a forgotten owner password needs the hosting shell. Sessions last 7 days and are not individually revocable (changing a password or removing a person kills theirs).
+- **Open mode is for `localhost` only.** With no accounts and no `LIVINGDOC_ADMIN_PASSWORD`, anyone who reaches the app can use it, *and the first visitor to create an account becomes the owner*. On any public host set the deployment password first.
+- **Never put a real password in this README or the repo.** The demo's earlier `admin` password was weak and public; rotate it. Sign-in rate limits are in memory, so they reset on restart and are per instance.
+- The Cloudflare quick-tunnel link used for the demo is temporary and its address changes on restart.
+
+**Scale and scope**
+- **One instance.** SQLite and in-memory limits mean a single server process; this suits one shop or a few branches, not a chain. Branch sync covers **stock movements only**; cash and promises stay per branch, via a shared SQLite "hub" file.
+- **Not accounting.** No tax, GST, payroll or audited statements. The cash section's "owed" is customers owing the shop; money the shop owes, favours and words live in the Trust ledger.
+- **Voice input** uses the browser's speech recognition. Hindi and Gujarati support varies by browser and has not been tested here.
+- **Hosting the frontend on a different site** from the API cannot keep a sign-in (the session cookie is `SameSite=Lax`); use one domain with a reverse proxy. See the [Frontend Pack](#frontend-pack).
+- **Times** are shown in the server's local time zone. Forecast "Why" explanations are English; headings, tables, buttons and warnings are translated.
+
+**What has and has not been tested**
+- 146 backend tests and 53 scripted browser checks pass, covering the rules above (privacy of entries, the proof round trip, public vs private routes, accounts and roles). They have **not** been run against a real shop's data, on a phone in the field, or with a real scanner. Treat it as a working prototype.
+
+---
+
+## More detail
+
 ## 🌐 Live Working Links & API Endpoints
 
-The system is deployed and accessible worldwide via Cloudflare Tunnel:
+The demo is exposed through a Cloudflare quick tunnel, so **its address changes every time the tunnel restarts**. If a link is dead, run it yourself (see [Setup](#setup--run-instructions)) or deploy with [`DEPLOY.md`](DEPLOY.md):
 * **Base URL:** `https://wear-linda-des-powerpoint.trycloudflare.com`
-* **Default Owner Password:** `admin`
+* **Sign-in:** create the first (owner) account, or use the password the person who deployed it gave you. Never publish a real password in a README.
 
 ### Interactive Documentation & Specs
 | Link | Description |
@@ -21,7 +164,7 @@ The system is deployed and accessible worldwide via Cloudflare Tunnel:
 ### Frontend Applications
 | Screen | Link | Access |
 |---|---|---|
-| **LivingDoc App** | [wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com) | Owner login (`admin`) |
+| **LivingDoc App** | [wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com) | Sign-in required |
 | **Public Storefront** | [wear-linda-des-powerpoint.trycloudflare.com/shop.html?s=main-store](https://wear-linda-des-powerpoint.trycloudflare.com/shop.html?s=main-store) | Public (no login) |
 | **Bilateral Counterparty View** | [wear-linda-des-powerpoint.trycloudflare.com/party.html](https://wear-linda-des-powerpoint.trycloudflare.com/party.html) | Token-gated per party |
 
@@ -42,6 +185,7 @@ The system is deployed and accessible worldwide via Cloudflare Tunnel:
 | **Sync Status** | `GET` [/api/sync/status](https://wear-linda-des-powerpoint.trycloudflare.com/api/sync/status) | Hub multi-branch synchronization state |
 
 ---
+
 
 **A small business runs on memory, favours and one person's long days. LivingDoc turns the owner's messy notes and the
 scanner's stock events into a live business page, and warns about shortages (including festival surges and supplier
@@ -95,7 +239,8 @@ deterministic English rule parser takes over, so the app keeps working.
 | **Languages** | English, हिन्दी, ગુજરાતી for the whole interface and for generated warnings. |
 | **Voice input** | A microphone button uses the browser's built-in speech recognition (where the browser supports it) in the selected language. |
 
-## Quick start
+
+## Quick start (more detail)
 
 You need Python 3.10 or newer. No Node.js, no database server, no build step.
 
@@ -138,6 +283,7 @@ export LLM_BASE_URL=https://api.openai.com/v1 LLM_API_KEY=sk-... LLM_MODEL=gpt-4
 
 The header badge shows whether the AI is online. Each note shows which reader handled it and the exact JSON it produced.
 Without an LLM, the simple reader understands English only.
+
 
 ## Configuration (environment variables)
 
@@ -374,8 +520,10 @@ examples/            sample scanner files and notes
 ## Hosting the frontend separately
 
 By default the backend serves the frontend at `/`, so one command runs everything. To host the frontend elsewhere (any
-static host), set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/config.js) to the API's address and start the backend with
+static host), grab the [Frontend Pack](#frontend-pack) and set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/config.js) to the API's address and start the backend with
 `LIVINGDOC_CORS_ORIGINS=https://your-frontend-origin`.
+
+**Sign-in caveat:** the session cookie is `SameSite=Lax`, so a frontend on a different *site* than the API cannot stay signed in. Put both behind one domain with a reverse proxy, or use the pack only for the public shop and party pages.
 
 ## Problems Faced & Engineering Challenges
 
@@ -415,16 +563,8 @@ Building an autonomous operations brain for micro-businesses revealed real-world
 * **The Problem:** In volatile markets, a good decision can produce a bad outcome (a sudden storm empties the street), while a reckless decision can look like genius through dumb luck. Traditional business software only records the final revenue, never evaluating the quality of the decision under uncertainty.
 * **Our Solution:** A **Frozen-Forecast Scorecard**. The system freezes its demand and price predictions *before* midnight of the target day. It evaluates past bets using three honest tests: Calibration (did 80% of days fall within the 80% confidence band?), Skill (did the model outperform a naive 7-day rolling baseline?), and Counterfactual Value (did dynamic surge/hold prices generate higher profit than flat pricing?).
 
-## Limitations (please read before using it for a real shop)
-
-- **Accounts, not a shared password.** People sign up with name, e-mail and password (salted scrypt hashes, 7-day signed session cookie, wrong tries rate-limited). The first account is the owner; on a public host it must present `LIVINGDOC_ADMIN_PASSWORD` as the setup code. Staff join with single-use invite codes from an owner. Not built: e-mail verification and reset e-mails (they need an e-mail service). Without any account and password the app is open: use that only on `127.0.0.1` or a trusted network.
-- **Branch sync** covers stock movements only; cash and promises stay per branch. The "hub" is a SQLite file on a shared path, which suits a few branches, not a large chain.
-- **Cash tracking vs the trust ledger.** The cash section's "owed" means a customer owes the business; money the business owes (and favours, and words) lives in the Trust ledger.
-- **Voice input** relies on the browser's speech recognition; support for Hindi and Gujarati varies by browser, and it has not been tested here.
-- **Hindi/Gujarati notes need an LLM.** The offline reader is English only. Forecast "Why" explanations are in English; headings, tables, buttons and warnings are translated.
-- **Starter data is made up.** Festival dates (Diwali 8 Nov 2026, Christmas, Uttarayan) and surge multipliers are starting guesses; set your own in Settings. Predictions improve as real usage is logged (burn rate is learned from the last 30 days).
-- **Times** are shown in the server's local time zone.
 
 ## License
 
 MIT, see [`LICENSE`](LICENSE).
+
