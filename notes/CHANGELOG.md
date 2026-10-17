@@ -2,6 +2,11 @@
 
 Format: date, what, files, tests, left undone.
 
+## 2026-10-17: Frontend Pack (PDF) and README rewrite
+- Submission asks for a *Frontend Pack*: a document of screenshots, each with a caption. Added `frontend-pack/LivingDoc-Frontend-Pack.pdf` (22 pages, real screenshots from the running app) and rewrote the README to cover problem and users, how each riddle shaped the project, risks and limitations, setup, and a link to the pack.
+- The hosting zip (`livingdoc-frontend-pack.zip`, `scripts/pack_frontend.py`) is kept as the static-host bundle.
+- Left undone: the PDF is not regenerated automatically; retake screenshots if the UI changes.
+
 ## 2026-10-17: Proper sign up and sign in
 - **Accounts:** sign up with name, e-mail and password (8+ chars, common/guessable passwords refused), sign in by e-mail, change password, sign out. Passwords stored as salted scrypt hashes only.
 - **First run:** the first account becomes the **owner**. On a host with `LIVINGDOC_ADMIN_PASSWORD` the first sign-up must type it as the *setup code*, so a stranger cannot claim the app. With no accounts and no password the app stays open (localhost) and the sidebar offers "Create an account to lock it".

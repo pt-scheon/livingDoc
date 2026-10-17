@@ -101,13 +101,11 @@ pip install playwright && playwright install chromium && python e2e/browser_smok
 
 ## Frontend Pack
 
-The whole browser side is available as a standalone pack you can host on any static host:
+The **Frontend Pack** is a PDF document of the project's screenshots, each with a caption explaining what you see and why it is built that way (22 pages: sign-up, Today, stock, money, forecast, trust ledger, cash flow, proof, Be found, helper, feedback, Hindi, dark mode, and the public shop, counterparty and phone views).
 
-- **Download:** [`frontend-pack/livingdoc-frontend-pack.zip`](frontend-pack/livingdoc-frontend-pack.zip) (about 100 KB, rebuilt with `make pack`)
-- **Pack guide:** [`frontend-pack/README.md`](frontend-pack/README.md)
-- **Source:** [`frontend/`](frontend/) (owner app `index.html`, public shop `shop.html`, counterparty page `party.html`, English/Hindi/Gujarati strings)
-
-Point it at an API by editing one line in [`frontend/config.js`](frontend/config.js). See [Hosting the frontend separately](#hosting-the-frontend-separately) for the sign-in caveat.
+- **Frontend Pack (PDF):** [`frontend-pack/LivingDoc-Frontend-Pack.pdf`](frontend-pack/LivingDoc-Frontend-Pack.pdf)
+- **Frontend source:** [`frontend/`](frontend/) (owner app `index.html`, public shop `shop.html`, counterparty page `party.html`, English/Hindi/Gujarati strings). The same files are zipped in [`frontend-pack/livingdoc-frontend-pack.zip`](frontend-pack/livingdoc-frontend-pack.zip) for hosting on a static host.
+- See [Hosting the frontend separately](#hosting-the-frontend-separately) for the sign-in caveat when the frontend and API are on different sites.
 
 ---
 
@@ -520,7 +518,7 @@ examples/            sample scanner files and notes
 ## Hosting the frontend separately
 
 By default the backend serves the frontend at `/`, so one command runs everything. To host the frontend elsewhere (any
-static host), grab the [Frontend Pack](#frontend-pack) and set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/config.js) to the API's address and start the backend with
+static host), grab the [frontend zip](frontend-pack/livingdoc-frontend-pack.zip) and set `window.LIVINGDOC_API` in [`frontend/config.js`](frontend/config.js) to the API's address and start the backend with
 `LIVINGDOC_CORS_ORIGINS=https://your-frontend-origin`.
 
 **Sign-in caveat:** the session cookie is `SameSite=Lax`, so a frontend on a different *site* than the API cannot stay signed in. Put both behind one domain with a reverse proxy, or use the pack only for the public shop and party pages.

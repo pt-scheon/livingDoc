@@ -1,5 +1,7 @@
 # LivingDoc Frontend Pack
 
+**The pack is the PDF:** [`LivingDoc-Frontend-Pack.pdf`](LivingDoc-Frontend-Pack.pdf), screenshots of the working app, each with a caption. The rest of this page is about the hosting zip that sits next to it.
+
 The whole browser side of LivingDoc as one folder you can host anywhere static files are served (Netlify, GitHub Pages, nginx, an S3 bucket). No build step, no npm, no framework: plain ES modules, CSS and three HTML pages.
 
 **Download:** [`livingdoc-frontend-pack.zip`](livingdoc-frontend-pack.zip) (rebuilt from [`/frontend`](../frontend) by `python scripts/pack_frontend.py`).
