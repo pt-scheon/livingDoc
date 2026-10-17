@@ -2,6 +2,9 @@
 
 Format: date, what, files, tests, left undone.
 
+## 2026-10-17: prompts.md
+- Added `prompts.md`: the four original prompts, verbatim, linked from the README.
+
 ## 2026-10-17: Frontend Pack (PDF) and README rewrite
 - Submission asks for a *Frontend Pack*: a document of screenshots, each with a caption. Added `frontend-pack/LivingDoc-Frontend-Pack.pdf` (22 pages, real screenshots from the running app) and rewrote the README to cover problem and users, how each riddle shaped the project, risks and limitations, setup, and a link to the pack.
 - The hosting zip (`livingdoc-frontend-pack.zip`, `scripts/pack_frontend.py`) is kept as the static-host bundle.

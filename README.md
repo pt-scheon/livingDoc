@@ -39,7 +39,7 @@ Run it locally, then expose it with a Cloudflare quick tunnel: `cloudflared tunn
 
 ---
 
-**Jump to:** [Problem and users](#problem-and-intended-users) · [How each riddle shaped it](#how-each-riddle-shaped-the-project) · [Risks and limitations](#risks-and-limitations) · [Setup / run](#setup--run-instructions) · [Frontend Pack](#frontend-pack) · [Live links](#-live-working-links--api-endpoints) · [Notes for coding agents](GEMINI.md)
+**Jump to:** [Prompts](prompts.md) · [Problem and users](#problem-and-intended-users) · [How each riddle shaped it](#how-each-riddle-shaped-the-project) · [Risks and limitations](#risks-and-limitations) · [Setup / run](#setup--run-instructions) · [Frontend Pack](#frontend-pack) · [Live links](#-live-working-links--api-endpoints) · [Notes for coding agents](GEMINI.md)
 
 ---
 
