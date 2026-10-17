@@ -3,6 +3,7 @@
 ## GitHub "About" text (paste into the repo description box)
 
 Self-updating business brain for small shops: speak or type messy notes, feed scanner events, and get a live page of stock, cash and promises, with early festival-aware shortage warnings. FastAPI + SQLite backend, JavaScript frontend, English / Hindi / Gujarati.
+Live demo: https://wear-linda-des-powerpoint.trycloudflare.com (Password: admin)
 
 **Suggested topics:** `fastapi` `sqlite` `javascript` `inventory-management` `small-business` `llm` `ollama` `hindi` `gujarati` `hackathon`
 

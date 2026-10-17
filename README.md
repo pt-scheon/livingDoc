@@ -1,5 +1,48 @@
 # LivingDoc: The Self-Updating Business Brain
 
+> 🌐 **Live Demo:** [https://wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com)  
+> 🔑 **Owner Password:** `admin`
+
+---
+
+## 🌐 Live Working Links & API Endpoints
+
+The system is deployed and accessible worldwide via Cloudflare Tunnel:
+* **Base URL:** `https://wear-linda-des-powerpoint.trycloudflare.com`
+* **Default Owner Password:** `admin`
+
+### Interactive Documentation & Specs
+| Link | Description |
+|---|---|
+| [**Swagger UI (/docs)**](https://wear-linda-des-powerpoint.trycloudflare.com/docs) | Interactive API playground to test any route directly |
+| [**ReDoc (/redoc)**](https://wear-linda-des-powerpoint.trycloudflare.com/redoc) | Human-readable comprehensive REST documentation |
+| [**OpenAPI Spec (/openapi.json)**](https://wear-linda-des-powerpoint.trycloudflare.com/openapi.json) | Standard JSON OpenAPI 3.1 specification |
+
+### Frontend Applications
+| Screen | Link | Access |
+|---|---|---|
+| **LivingDoc App** | [wear-linda-des-powerpoint.trycloudflare.com](https://wear-linda-des-powerpoint.trycloudflare.com) | Owner login (`admin`) |
+| **Public Storefront** | [wear-linda-des-powerpoint.trycloudflare.com/shop.html?s=main-store](https://wear-linda-des-powerpoint.trycloudflare.com/shop.html?s=main-store) | Public (no login) |
+| **Bilateral Counterparty View** | [wear-linda-des-powerpoint.trycloudflare.com/party.html](https://wear-linda-des-powerpoint.trycloudflare.com/party.html) | Token-gated per party |
+
+### Working API Endpoints (Direct Access)
+| Resource | Method & Path | Description |
+|---|---|---|
+| **Health Check** | `GET` [/api/health](https://wear-linda-des-powerpoint.trycloudflare.com/api/health) | Uptime & server status |
+| **Auth Status** | `GET` [/api/auth/status](https://wear-linda-des-powerpoint.trycloudflare.com/api/auth/status) | Authentication requirement & session state |
+| **Living Document (JSON)** | `GET` [/api/document?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/document?branch=Main%20Store) | Full live state (stock, cash, promises, risks) |
+| **Markdown Export** | `GET` [/api/document.md?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/document.md?branch=Main%20Store) | Clean markdown summary export |
+| **Demand Forecast** | `GET` [/api/forecast?branch=Main%20Store&horizon=14](https://wear-linda-des-powerpoint.trycloudflare.com/api/forecast?branch=Main%20Store&horizon=14) | 14/28/56-day Bayesian demand with 50/80% bands |
+| **Dynamic Pricing** | `GET` [/api/pricing?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/pricing?branch=Main%20Store) | Raise / sale / hold product pricing actions |
+| **Forecast Scorecard** | `GET` [/api/scorecard?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/scorecard?branch=Main%20Store) | Brier accuracy score graded against actuals |
+| **Trust Ledger** | `GET` [/api/trust/ledger?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/trust/ledger?branch=Main%20Store) | Bilateral promises & FIFO debts |
+| **Cashflow Projections** | `GET` [/api/cashflow/promises?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/cashflow/promises?branch=Main%20Store) | Seeded cashflow with 10/50/90% percentiles |
+| **Verifiable Proofs** | `GET` [/api/proofs?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/proofs?branch=Main%20Store) | Band-level Merkle proofs for banks/suppliers |
+| **Festival Engine** | `GET` [/api/festivals?branch=Main%20Store](https://wear-linda-des-powerpoint.trycloudflare.com/api/festivals?branch=Main%20Store) | Festival calendar & blackout lead times |
+| **Sync Status** | `GET` [/api/sync/status](https://wear-linda-des-powerpoint.trycloudflare.com/api/sync/status) | Hub multi-branch synchronization state |
+
+---
+
 **A small business runs on memory, favours and one person's long days. LivingDoc turns the owner's messy notes and the
 scanner's stock events into a live business page, and warns about shortages (including festival surges and supplier
 shutdowns) before they happen.**

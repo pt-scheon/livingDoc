@@ -330,7 +330,8 @@ def test_spot_check_openings_are_unforgeable_and_gated(clean):
     chk = clean.post("/api/proofs/check-openings", json={"packet": packet, "nonce": "verifier-nonce-A", "openings": r["openings"]}).json()
     assert chk["ok"] and chk["indices_as_challenged"] and all(c["in_tree"] and c["consistent_with_claims"] for c in chk["checks"])
     # the shop answering a different challenge (cherry-picking) is caught
-    r2 = clean.post(f"/api/proofs/{pid}/open", json={"open_key": key, "nonce": "verifier-nonce-B"}).json()
+    nonce_b = next(f"verifier-nonce-{k}" for k in range(100) if proofs.challenge_indices(packet["merkle_root"], f"verifier-nonce-{k}", 7) != r["indices"])
+    r2 = clean.post(f"/api/proofs/{pid}/open", json={"open_key": key, "nonce": nonce_b}).json()
     assert r2["indices"] != r["indices"]
     swapped = clean.post("/api/proofs/check-openings", json={"packet": packet, "nonce": "verifier-nonce-A", "openings": r2["openings"]}).json()
     assert swapped["ok"] is False and swapped["indices_as_challenged"] is False
