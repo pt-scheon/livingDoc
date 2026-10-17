@@ -2,6 +2,43 @@
 
 > A small shop runs on memory, favours and one person's long days. LivingDoc turns the owner's messy notes and the scanner's stock events into a live business page, keeps the shop's promises honest on both sides, forecasts demand without pretending to be certain, and lets the shop be found and trusted without handing itself over to a tool it cannot see inside.
 
+# ☁️ CLOUD HOSTING OF WEBSITE AS WELL AS 🖥️ LOCAL HOSTING
+
+**LivingDoc runs both ways from the same code.** Pick one, or run both at the same time.
+
+| | 🖥️ **LOCAL HOSTING** (your computer) | ☁️ **CLOUD HOSTING** (the internet) |
+|---|---|---|
+| **Good for** | Trying it, a shop that keeps its books on its own machine, development | A public address anyone can open, a public shop page, showing judges |
+| **Address** | `http://localhost:8000` | `https://<your-name>.onrender.com` (or Fly.io, or your own server) |
+| **Cost** | Free | Free plan on Render (sleeps when idle, data resets on restart); paid plan with a disk keeps data |
+| **Needs** | Python 3.10+ | A GitHub account and a Render (or Fly.io) account; no code changes |
+| **Data lives** | In one SQLite file on your machine | On the cloud host (`/data` volume on a paid plan) |
+| **Sign-in** | Open until you create an account | Required: set `LIVINGDOC_ADMIN_PASSWORD` first |
+
+### 🖥️ Local hosting: 4 commands
+```bash
+git clone https://github.com/pt-scheon/livingdoc.git && cd livingdoc/backend
+python3 -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m uvicorn app.main:app --port 8000                  # then open http://localhost:8000
+```
+
+### ☁️ Cloud hosting: 5 steps on Render (free)
+1. Push this repository to your GitHub (it already contains `Dockerfile` and `render.yaml`).
+2. On [dashboard.render.com](https://dashboard.render.com) choose **New + → Blueprint** and select the repository.
+3. When asked for `LIVINGDOC_ADMIN_PASSWORD`, type a long passphrase. It is the setup code for your owner account. **Not** `admin`.
+4. Click **Apply**. Wait for the build; Render gives you an `https://…onrender.com` address.
+5. Open it, choose **Create account**, and enter your details plus the passphrase from step 3.
+
+Prefer Docker, Fly.io or your own server? Everything is in [`DEPLOY.md`](DEPLOY.md): `docker compose up -d --build` works anywhere Docker does.
+
+### 🌐 Or share your local copy for a while (temporary cloud address)
+Run it locally, then expose it with a Cloudflare quick tunnel: `cloudflared tunnel --url http://localhost:8000`. You get a temporary `https://….trycloudflare.com` address that works **only while your computer and the tunnel are running**, and changes every time. Fine for a demo, not for a real shop.
+
+> **Status of this repository's live demo:** a permanent cloud deployment is **not** set up until you complete the five steps above. If a link in this README is dead, the temporary tunnel is off. Anyone can run it locally or deploy it in minutes with the steps above.
+
+---
+
 **Jump to:** [Problem and users](#problem-and-intended-users) · [How each riddle shaped it](#how-each-riddle-shaped-the-project) · [Risks and limitations](#risks-and-limitations) · [Setup / run](#setup--run-instructions) · [Frontend Pack](#frontend-pack) · [Live links](#-live-working-links--api-endpoints) · [Notes for coding agents](GEMINI.md)
 
 ---
