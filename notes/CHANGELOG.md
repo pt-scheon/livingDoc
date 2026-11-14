@@ -2,6 +2,13 @@
 
 Format: date, what, files, tests, left undone.
 
+## 2026-11-14: Design system ("Neel & Haldi, calmed down")
+- Added `DESIGN.md`: colour roles (light and dark), type scale, 4px spacing scale, radius, shadows, components, icons. Same brand, quieter: indigo for actions, haldi as the one highlight, no gradients.
+- `tokens.css` gains `--ink-3`, `--accent-hover`, `--focus`, `--chart-*`, `--text-*`/`--lh-*`, `--space-*`, `--radius-xs`/`--radius-pill`, `--content`, `--measure`, `--control-h`. Old names kept.
+- `base.css` and `components.css` now use tokens instead of raw values. Same class names, no JS or HTML changes. Hero is flat (no gradient or dots), sidebar dots removed, dot grid kept only on login. Focus ring is indigo, toasts are light cards, table headers are small caps labels, chips are square-ish.
+- Tests: 146 pytest passed; `e2e/browser_smoke.py` 53 PASS, no console errors. Checked light, dark and phone screenshots.
+- Left undone: emoji used as icons in buttons and headings (✍️ 🎙️ 🎤) should become Lucide icons; `frontend-pack` PDF screenshots are now out of date.
+
 ## 2026-10-17: prompts.md
 - Added `prompts.md`: the four original prompts, verbatim, linked from the README.
 

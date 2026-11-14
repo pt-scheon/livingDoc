@@ -1,49 +1,79 @@
-/* Design tokens. "Neel & Haldi": indigo-dye ink with a turmeric highlight, from Gujarat's bandhani cloth and shop signboards. */
-:root {
-  --bg: #f2f4fa;
-  --paper: #ffffff;
-  --paper-2: #f5f6fb;
-  --ink: #12183a;
-  --ink-2: #4f5677;
-  --line: #dde1ee;
-  --accent: #2b3a9e;
-  --accent-ink: #ffffff;
-  --accent-soft: #e5e8fb;
-  --haldi: #f2b01e;
-  --haldi-ink: #3b2a00;
-  --side: #121a4a;
-  --side-ink: #dfe4ff;
-  --side-dim: #98a1d6;
-  --ok-bg: #dcf3e6;   --ok-fg: #11573a;
-  --low-bg: #fdf0c8;  --low-fg: #6f4604;
-  --out-bg: #fbdcdf;  --out-fg: #8d1c2a;
-  --info-bg: #e3e9fb; --info-fg: #1f3377;
-  --shadow: 0 1px 0 rgb(18 24 58 / .04);
-  --shadow-lift: 0 10px 30px -12px rgb(18 24 58 / .28);
-  --radius: 16px;
-  --radius-sm: 10px;
-  --font-body: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", system-ui, -apple-system, "Segoe UI", Roboto, "Kohinoor Devanagari", "Kohinoor Gujarati", sans-serif;
-  --font-head: "Bricolage Grotesque", "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+:root{
+--bg:#f6f7fb;
+--paper:#ffffff;
+--paper-2:#f5f6fb;
+--line:#dde1ee;
+--ink:#12183a;
+--ink-2:#4f5677;
+--ink-3:#6b7192;
+--accent:#2b3a9e;
+--accent-hover:#22307f;
+--accent-ink:#ffffff;
+--accent-soft:#e5e8fb;
+--focus:#2b3a9e;
+--haldi:#f2b01e;
+--haldi-ink:#3b2a00;
+--side:#121a4a;
+--side-ink:#dfe4ff;
+--side-dim:#98a1d6;
+--ok-bg:#dcf3e6;--ok-fg:#11573a;
+--low-bg:#fdf0c8;--low-fg:#6f4604;
+--out-bg:#fbdcdf;--out-fg:#8d1c2a;
+--info-bg:#e3e9fb;--info-fg:#1f3377;
+--chart-actual:var(--ink-2);
+--chart-forecast:var(--accent);
+--chart-band:var(--accent-soft);
+--chart-today:var(--haldi);
+--font-body:"Noto Sans","Noto Sans Devanagari","Noto Sans Gujarati",system-ui,-apple-system,"Segoe UI",Roboto,"Kohinoor Devanagari","Kohinoor Gujarati",sans-serif;
+--font-head:"Bricolage Grotesque","Noto Sans","Noto Sans Devanagari","Noto Sans Gujarati",system-ui,sans-serif;
+--font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--text-xs:.75rem;--lh-xs:1rem;
+--text-sm:.875rem;--lh-sm:1.25rem;
+--text-md:1rem;--lh-md:1.5rem;
+--text-lg:1.125rem;--lh-lg:1.75rem;
+--text-xl:1.375rem;--lh-xl:1.875rem;
+--text-2xl:1.75rem;--lh-2xl:2.25rem;
+--text-3xl:2.25rem;--lh-3xl:2.75rem;
+--text-4xl:3rem;--lh-4xl:3.5rem;
+--space-1:4px;
+--space-2:8px;
+--space-3:12px;
+--space-4:16px;
+--space-5:24px;
+--space-6:32px;
+--space-7:48px;
+--space-8:64px;
+--content:1120px;
+--measure:68ch;
+--control-h:40px;
+--radius-xs:6px;
+--radius-sm:10px;
+--radius:16px;
+--radius-pill:999px;
+--shadow:0 1px 0 rgb(18 24 58 / .04);
+--shadow-lift:0 10px 30px -12px rgb(18 24 58 / .28);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a0f2e;
-    --paper: #131a47;
-    --paper-2: #19215a;
-    --ink: #eef0ff;
-    --ink-2: #a9b1da;
-    --line: #28316e;
-    --accent: #93a4ff;
-    --accent-ink: #0a0f2e;
-    --accent-soft: #232d6b;
-    --haldi: #f6bd3c;
-    --side: #080c25;
-    --ok-bg: #123b2c;   --ok-fg: #a6e8c4;
-    --low-bg: #4a3a0c;  --low-fg: #f6d98a;
-    --out-bg: #4b1a26;  --out-fg: #f7b4be;
-    --info-bg: #1c2766; --info-fg: #bccaff;
-    --shadow: none;
-    --shadow-lift: 0 10px 30px -12px rgb(0 0 0 / .6);
-  }
+@media (prefers-color-scheme:dark){
+:root{
+--bg:#0a0f2e;
+--paper:#131a47;
+--paper-2:#19215a;
+--line:#28316e;
+--ink:#eef0ff;
+--ink-2:#a9b1da;
+--ink-3:#8590c4;
+--accent:#93a4ff;
+--accent-hover:#aab7ff;
+--accent-ink:#0a0f2e;
+--accent-soft:#232d6b;
+--focus:#93a4ff;
+--haldi:#f6bd3c;
+--side:#080c25;
+--ok-bg:#123b2c;--ok-fg:#a6e8c4;
+--low-bg:#4a3a0c;--low-fg:#f6d98a;
+--out-bg:#4b1a26;--out-fg:#f7b4be;
+--info-bg:#1c2766;--info-fg:#bccaff;
+--shadow:none;
+--shadow-lift:0 10px 30px -12px rgb(0 0 0 / .6);
+}
 }
